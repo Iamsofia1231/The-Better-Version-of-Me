@@ -209,10 +209,10 @@
                 <div class="contact-card">
                     <div class="contact-icon">💬</div>
                     <h3>Contact Form</h3>
-                    <form class="contact-form" onsubmit="handleContactSubmit(event)">
-                        <input type="text" placeholder="Your Name" required>
-                        <input type="email" placeholder="Your Email" required>
-                        <textarea placeholder="Your Message" rows="4" required></textarea>
+                    <form class="contact-form" action="https://formspree.io/f/mykqqjeo" method="POST">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                        <input type="email" name="email" placeholder="Your Email" required>
+                        <textarea name="message" placeholder="Your Message" rows="4" required></textarea>
                         <button type="submit" class="submit-button">Send Message</button>
                     </form>
                 </div>
