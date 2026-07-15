@@ -80,7 +80,7 @@ window.addEventListener('scroll', () => {
 });
 
 // ADD RIPPLE EFFECT TO BUTTONS - Creates a cool ripple when you click buttons
-document.querySelectorAll('.cta-button, .submit-button, .social-link').forEach(button => {
+document.querySelectorAll('.cta-button, .submit-button').forEach(button => {
     button.addEventListener('click', function(e) {
         const ripple = document.createElement('span');
         const rect = this.getBoundingClientRect();

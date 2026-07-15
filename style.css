@@ -165,6 +165,9 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
     font-size: 1rem;
+    /* position + overflow let the ripple effect stay inside the button */
+    position: relative;
+    overflow: hidden;
 }
 
 .cta-button:hover {
@@ -456,9 +459,14 @@ body {
 
 .contact-methods {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2.5rem;
-    margin-top: 2.5rem;
+    /* auto side-margins center the two cards so they don't stretch too wide */
+    margin: 2.5rem auto 0;
+    max-width: 720px;
+    /* 'start' lets each card shrink to its own height instead of
+       stretching tall and leaving empty space (e.g. the short Email card) */
+    align-items: start;
 }
 
 .contact-card {
@@ -569,11 +577,38 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     font-size: 1rem;
     box-shadow: 0 4px 15px rgba(126, 200, 227, 0.3);
+    /* position + overflow let the ripple effect stay inside the button */
+    position: relative;
+    overflow: hidden;
 }
 
 .submit-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(126, 200, 227, 0.5);
+}
+
+/* ===================================
+   RIPPLE EFFECT (the little splash when you click a button)
+   The <span class="ripple"> is created by script.js on click.
+   'currentColor' makes the ripple match each button's text color,
+   so it shows up on both the white and the blue buttons.
+   =================================== */
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.35;
+    transform: scale(0);
+    animation: rippleEffect 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rippleEffect {
+    to {
+        transform: scale(2.5);
+        opacity: 0;
+    }
 }
 
 /* ===================================
