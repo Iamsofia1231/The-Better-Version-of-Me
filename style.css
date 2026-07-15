@@ -1,4 +1,19 @@
 /* ===================================
+   FANCY TITLE FONT
+   "Dancing Script" is a free web font with a sweet, bouncy handwritten
+   look (very similar to Sweet Hipster). The font file lives in the
+   fonts/ folder, so the site doesn't depend on any outside server.
+   =================================== */
+
+@font-face {
+    font-family: 'Dancing Script';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('fonts/DancingScript-Bold.woff2') format('woff2');
+}
+
+/* ===================================
    GENERAL STYLES & VARIABLES
    =================================== */
 
@@ -180,12 +195,13 @@ body {
    =================================== */
 
 .section-title {
-    font-size: 2.8rem;
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.6rem;
     color: var(--secondary-blue);
     margin-bottom: 3rem;
     text-align: center;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 /* ===================================
@@ -284,7 +300,7 @@ body {
     }
     
     .section-title {
-        font-size: 2.2rem;
+        font-size: 2.9rem;
     }
 }
 
@@ -678,11 +694,12 @@ body {
 }
 
 .detail-title {
-    font-size: 2.6rem;
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.2rem;
     color: var(--secondary-blue);
     text-align: center;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     margin-bottom: 2.5rem;
 }
 
@@ -716,7 +733,7 @@ body {
 
 @media (max-width: 768px) {
     .detail-title {
-        font-size: 2rem;
+        font-size: 2.6rem;
     }
 
     .detail-body {
@@ -774,7 +791,7 @@ body {
     }
 
     .section-title {
-        font-size: 2rem;
+        font-size: 2.7rem;
         margin-bottom: 2.5rem;
     }
 
@@ -819,7 +836,7 @@ body {
     }
 
     .section-title {
-        font-size: 1.8rem;
+        font-size: 2.4rem;
     }
 
     .about,
