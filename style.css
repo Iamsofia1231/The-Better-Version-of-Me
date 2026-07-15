@@ -13,6 +13,16 @@
     src: url('fonts/DancingScript-Bold.woff2') format('woff2');
 }
 
+/* The real "Sweet Hipster" font (Typhoon Type), used for the main
+   section titles. Free for personal projects. */
+@font-face {
+    font-family: 'Sweet Hipster';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/Sweet-Hipster.ttf') format('truetype');
+}
+
 /* ===================================
    GENERAL STYLES & VARIABLES
    =================================== */
@@ -197,12 +207,12 @@ body {
    =================================== */
 
 .section-title {
-    font-family: 'Dancing Script', cursive;
-    font-size: 3.6rem;
-    color: var(--secondary-blue);
+    font-family: 'Sweet Hipster', 'Dancing Script', cursive;
+    font-size: 4.2rem;
+    color: #000000;
     margin-bottom: 3rem;
     text-align: center;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: 0.5px;
 }
 
