@@ -393,7 +393,7 @@ body {
 
 .project-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(255, 212, 229, 0.2);
+    box-shadow: 0 15px 40px rgba(126, 200, 227, 0.2);
 }
 
 .project-icon {
