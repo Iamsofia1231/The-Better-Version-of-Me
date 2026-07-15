@@ -170,7 +170,7 @@ body {
 .hero-subtitle {
     font-size: 2rem;
     margin-bottom: 0.8rem;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.5px;
 }
 
@@ -233,7 +233,7 @@ body {
     line-height: 1.9;
     margin-bottom: 2.5rem;
     color: var(--dark-text);
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .highlights {
@@ -284,7 +284,7 @@ body {
     border-radius: 10px;
     color: var(--dark-text);
     text-decoration: none;
-    font-weight: 300;
+    font-weight: 400;
     transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -363,7 +363,7 @@ body {
     color: #666;
     font-size: 0.95rem;
     line-height: 1.7;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 /* ===================================
@@ -412,7 +412,7 @@ body {
     margin-bottom: 1.5rem;
     font-size: 0.95rem;
     line-height: 1.7;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .project-tag {
@@ -484,7 +484,7 @@ body {
     color: #555;
     line-height: 1.8;
     margin-bottom: 1.2rem;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .entry-tag {
@@ -543,9 +543,9 @@ body {
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
 }
 
-/* Light weight to match the rest of the body text */
+/* Normal weight to match the rest of the body text */
 .contact-card p {
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .contact-icon {
