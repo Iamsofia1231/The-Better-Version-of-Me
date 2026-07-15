@@ -35,6 +35,7 @@
     --accent-purple: #d4a8f7;
     --accent-green: #b8f3d6;
     --baby-blue: #cde8f7;   /* soft baby blue used for the top bar & footer */
+    --light-navy: #2d5a85;  /* darker blue for the small subtitles/headings */
     --white: #ffffff;
     --dark-text: #1a2332;
     --light-gray: #f5f7fa;
@@ -257,7 +258,7 @@ body {
 
 .highlight-box h3 {
     font-family: 'Dancing Script', cursive;
-    color: var(--secondary-blue);
+    color: var(--light-navy);
     margin-bottom: 1.5rem;
     font-size: 2rem;
     font-weight: 700;
@@ -353,7 +354,7 @@ body {
 }
 
 .interest-card h3 {
-    color: var(--secondary-blue);
+    color: var(--light-navy);
     margin-bottom: 0.8rem;
     font-size: 1.5rem;
     font-weight: 700;
@@ -401,7 +402,7 @@ body {
 }
 
 .project-card h3 {
-    color: var(--secondary-blue);
+    color: var(--light-navy);
     margin-bottom: 1rem;
     font-size: 1.4rem;
     font-weight: 700;
@@ -554,14 +555,14 @@ body {
 }
 
 .contact-card h3 {
-    color: var(--secondary-blue);
+    color: var(--light-navy);
     margin-bottom: 1.2rem;
     font-size: 1.4rem;
     font-weight: 700;
 }
 
 .contact-card a {
-    color: var(--secondary-blue);
+    color: var(--light-navy);
     text-decoration: none;
     font-weight: 700;
     transition: opacity 0.3s ease;
