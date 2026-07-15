@@ -34,6 +34,7 @@
     --accent-pink: #ffd4e5;
     --accent-purple: #d4a8f7;
     --accent-green: #b8f3d6;
+    --baby-blue: #cde8f7;   /* soft baby blue used for the top bar & footer */
     --white: #ffffff;
     --dark-text: #1a2332;
     --light-gray: #f5f7fa;
@@ -68,7 +69,7 @@ body {
    =================================== */
 
 .navbar {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    background-color: var(--baby-blue);
     padding: 1.2rem 0;
     position: sticky;
     top: 0;
@@ -89,7 +90,7 @@ body {
     font-family: 'Dancing Script', cursive;
     font-size: 2rem;
     font-weight: 700;
-    color: var(--white);
+    color: var(--dark-text);   /* dark so the name is readable on the baby-blue bar */
     letter-spacing: 0.5px;
 }
 
@@ -100,7 +101,7 @@ body {
 }
 
 .nav-links a {
-    color: var(--white);
+    color: var(--dark-text);   /* dark so links are readable on the baby-blue bar */
     text-decoration: none;
     font-weight: 500;
     font-size: 0.95rem;
@@ -108,8 +109,7 @@ body {
 }
 
 .nav-links a:hover {
-    opacity: 0.85;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    opacity: 0.65;
 }
 
 /* Mobile responsive - hide nav on small screens */
@@ -500,8 +500,9 @@ body {
 
 .contact {
     padding: 5rem 30px;
-    background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-blue) 100%);
-    color: var(--white);
+    /* Green removed - now matches the rest of the site's light background */
+    background-color: var(--light-gray);
+    color: var(--dark-text);
 }
 
 .contact-intro {
@@ -670,8 +671,8 @@ body {
    =================================== */
 
 .footer {
-    background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
-    color: var(--white);
+    background-color: var(--baby-blue);
+    color: var(--dark-text);   /* dark so footer text is readable on baby-blue */
     text-align: center;
     padding: 2.5rem 30px;
     font-size: 0.95rem;
