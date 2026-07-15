@@ -418,8 +418,8 @@ body {
 
 .project-tag {
     display: inline-block;
-    background: linear-gradient(135deg, var(--accent-green), var(--primary-blue));
-    color: var(--white);
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    color: #4a2f7a;   /* dark purple so the tag text stays readable on the light gradient */
     padding: 0.5rem 1rem;
     border-radius: 25px;
     font-size: 0.8rem;
