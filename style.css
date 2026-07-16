@@ -307,13 +307,16 @@ body {
     content: "⟶";   /* longer arrow glyph */
     color: #4f9fd0;   /* darker, more visible pastel blue */
     font-weight: 700;
-    font-size: 1.5rem;
     opacity: 0.9;
+    /* scale() enlarges the arrow visually WITHOUT changing the row height,
+       so the button spacing stays exactly as it was before */
+    transform: scale(1.5);
+    transform-origin: right center;
     transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
 .highlight-box li a:hover::after {
-    transform: translateX(4px);
+    transform: scale(1.5) translateX(3px);
     opacity: 1;
 }
 
