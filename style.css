@@ -36,6 +36,15 @@
     --accent-green: #b8f3d6;
     --baby-blue: #cde8f7;   /* soft baby blue used for the top bar & footer */
     --light-navy: #2d5a85;  /* darker blue for the small subtitles/headings */
+    /* Soft blue "watercolor + sparkle dots" background for the little tags.
+       Layers: several small white dots (bokeh) over a soft blue gradient. */
+    --watercolor:
+        radial-gradient(circle at 18% 28%, rgba(255,255,255,0.65) 1.5px, transparent 2.5px),
+        radial-gradient(circle at 62% 68%, rgba(255,255,255,0.5) 1px, transparent 2px),
+        radial-gradient(circle at 42% 85%, rgba(255,255,255,0.5) 2px, transparent 3px),
+        radial-gradient(circle at 88% 32%, rgba(255,255,255,0.55) 1px, transparent 2px),
+        radial-gradient(circle at 78% 12%, rgba(255,255,255,0.4) 1.5px, transparent 2.5px),
+        linear-gradient(135deg, #c6e9f9 0%, #93d2f0 45%, #bfe4f7 100%);
     --white: #ffffff;
     --dark-text: #1a2332;
     --light-gray: #f5f7fa;
@@ -418,8 +427,9 @@ body {
 
 .project-tag {
     display: inline-block;
-    background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
-    color: #4a2f7a;   /* dark purple so the tag text stays readable on the light gradient */
+    background-color: #9bd4f0;
+    background-image: var(--watercolor);
+    color: #143a56;   /* dark blue so the tag text stays readable on the light watercolor */
     padding: 0.5rem 1rem;
     border-radius: 25px;
     font-size: 0.8rem;
@@ -490,8 +500,9 @@ body {
 
 .entry-tag {
     display: inline-block;
-    background-color: var(--primary-blue);
-    color: var(--white);
+    background-color: #9bd4f0;
+    background-image: var(--watercolor);
+    color: #143a56;
     padding: 0.4rem 1rem;
     border-radius: 20px;
     font-size: 0.8rem;
