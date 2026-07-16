@@ -693,6 +693,44 @@ body {
    FOOTER
    =================================== */
 
+/* ===================================
+   VOLUNTEER HOURS SECTION
+   =================================== */
+
+.volunteer {
+    padding: 5rem 30px;
+    background-color: var(--light-gray);
+}
+
+/* The "Total Hours" counter card */
+.volunteer-total {
+    max-width: 240px;
+    margin: 0 auto 3rem;
+    padding: 1.6rem 2rem;
+    text-align: center;
+    background-color: var(--white);
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.06);
+}
+
+.volunteer-number {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--light-navy);
+    line-height: 1;
+}
+
+.volunteer-label {
+    display: block;
+    margin-top: 0.4rem;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
 .footer {
     background-color: var(--baby-blue);
     color: var(--dark-text);   /* dark so footer text is readable on baby-blue */
