@@ -257,11 +257,11 @@ body {
 }
 
 .highlight-box h3 {
-    font-family: 'Dancing Script', cursive;
+    font-family: 'Sweet Hipster', 'Dancing Script', cursive;
     color: var(--light-navy);
     margin-bottom: 1.5rem;
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 2.4rem;
+    font-weight: 400;
 }
 
 .highlight-box ul {
