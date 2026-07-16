@@ -304,10 +304,11 @@ body {
 
 /* The little arrow that shows the item is clickable */
 .highlight-box li a::after {
-    content: "→";
-    color: var(--secondary-blue);
+    content: "⟶";   /* longer arrow glyph */
+    color: #4f9fd0;   /* darker, more visible pastel blue */
     font-weight: 700;
-    opacity: 0.55;
+    font-size: 1.5rem;
+    opacity: 0.9;
     transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
