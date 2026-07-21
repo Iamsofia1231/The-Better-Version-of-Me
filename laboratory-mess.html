@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratory Mess - A Chemistry Game by Sofia Shao</title>
+    <style>
+        /* ==========================================================
+           LABORATORY MESS - a chemistry mixing game
+           This page is self-contained (its own styles + script) so it
+           doesn't interfere with the rest of the website.
+           ========================================================== */
+
+        /* The fancy title font, reused from the main site */
+        @font-face {
+            font-family: 'Sweet Hipster';
+            src: url('fonts/Sweet-Hipster.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        :root {
+            --baby-blue: #cde8f7;
+            --primary-blue: #a8d8ea;
+            --secondary-blue: #7ec8e3;
+            --light-navy: #2d5a85;
+            --dark-text: #1a2332;
+            --light-gray: #f5f7fa;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--dark-text);
+            background: linear-gradient(160deg, #eaf6fd 0%, #f5f7fa 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ---------- Top bar ---------- */
+        .topbar {
+            background-color: var(--baby-blue);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(126, 200, 227, 0.15);
+        }
+        .topbar a { color: var(--dark-text); text-decoration: none; font-weight: 700; }
+        .topbar a:hover { opacity: 0.7; }
+
+        /* ---------- Header ---------- */
+        header { text-align: center; padding: 2rem 1rem 0.5rem; }
+        header h1 {
+            font-family: 'Sweet Hipster', cursive;
+            font-size: 4rem;
+            color: var(--light-navy);
+            line-height: 1.1;
+        }
+        header p { color: #555; font-size: 1.1rem; max-width: 600px; margin: 0.3rem auto 0; }
+
+        /* ---------- Progress bar ---------- */
+        .progress-wrap {
+            max-width: 520px;
+            margin: 1.2rem auto 0;
+            text-align: center;
+        }
+        .progress-label { font-weight: 700; color: var(--light-navy); margin-bottom: 0.4rem; }
+        .progress-dots { display: flex; justify-content: center; gap: 0.6rem; }
+        .dot {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--white);
+            border: 3px solid var(--primary-blue);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; transition: all 0.3s ease;
+        }
+        .dot.filled { background: var(--secondary-blue); border-color: var(--secondary-blue); transform: scale(1.1); }
+
+        /* ---------- Layout ---------- */
+        .game {
+            max-width: 1100px;
+            margin: 1.5rem auto;
+            padding: 0 1rem 3rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .panel {
+            background: var(--white);
+            border-radius: 18px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+        }
+        .panel h2 { color: var(--light-navy); font-size: 1.3rem; margin-bottom: 1rem; text-align: center; }
+
+        /* ---------- Molecule shelf ---------- */
+        .shelf-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+            gap: 0.7rem;
+        }
+        .molecule {
+            border: none;
+            cursor: pointer;
+            border-radius: 12px;
+            padding: 0.7rem 0.4rem;
+            text-align: center;
+            color: #1a2332;
+            font-family: inherit;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .molecule:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
+        .molecule .formula { font-size: 1.15rem; font-weight: 800; display: block; }
+        .molecule .mname { font-size: 0.72rem; display: block; margin-top: 0.15rem; opacity: 0.85; }
+        .molecule.selected { outline: 4px solid var(--light-navy); transform: translateY(-3px); }
+        .molecule:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        /* ---------- Beaker / mixing area ---------- */
+        .mix-area { text-align: center; }
+        #stage {
+            position: relative;
+            height: 230px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .beaker {
+            font-size: 6rem;
+            line-height: 1;
+            transition: transform 0.2s ease, filter 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        .beaker.shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px) rotate(-4deg)}
+            40%{transform:translateX(12px) rotate(4deg)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)}
+        }
+
+        .selected-chips { min-height: 42px; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 0.8rem; }
+        .chip {
+            background: var(--baby-blue); color: var(--dark-text);
+            padding: 0.35rem 0.8rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .chip button { background: none; border: none; cursor: pointer; font-weight: 800; color: #c0392b; font-size: 1rem; line-height: 1; }
+        .hint { color: #888; font-size: 0.95rem; }
+
+        .controls { margin-top: 0.8rem; display: flex; gap: 0.8rem; justify-content: center; }
+        .btn {
+            border: none; cursor: pointer; font-family: inherit; font-weight: 700;
+            padding: 0.75rem 1.8rem; border-radius: 30px; font-size: 1rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-mix { background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue)); color: #fff; box-shadow: 0 4px 15px rgba(126,200,227,0.5); }
+        .btn-clear { background: #f0f0f3; color: #555; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* ---------- Result ---------- */
+        .result {
+            margin-top: 1rem; padding: 1.2rem; border-radius: 14px;
+            background: var(--light-gray); text-align: left; display: none;
+            border-left: 6px solid var(--secondary-blue);
+        }
+        .result.show { display: block; animation: pop 0.35s ease; }
+        @keyframes pop { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
+        .result .r-emoji { font-size: 2rem; }
+        .result h3 { color: var(--light-navy); margin: 0.3rem 0; }
+        .result .r-product { font-weight: 700; }
+        .result .r-fact { margin-top: 0.5rem; color: #444; }
+        .result .r-warn { margin-top: 0.6rem; color: #b5651d; font-weight: 700; font-size: 0.9rem; }
+        .result.norxn { border-left-color: #bbb; }
+
+        /* ---------- Effect particles ---------- */
+        .particle { position: absolute; border-radius: 50%; pointer-events: none; z-index: 3; }
+        .flash { position: absolute; inset: 0; background: #fff; z-index: 4; pointer-events: none; animation: flash 0.5s ease-out forwards; }
+        @keyframes flash { from{opacity:0.9} to{opacity:0} }
+        .emoji-burst { position:absolute; z-index:3; font-size:2rem; pointer-events:none; }
+
+        /* ---------- Quiz overlay ---------- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(26,35,50,0.6);
+            display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem;
+        }
+        .overlay.show { display: flex; }
+        .quiz-card {
+            background: #fff; border-radius: 20px; padding: 2rem; max-width: 560px; width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
+        }
+        .quiz-card h2 { font-family: 'Sweet Hipster', cursive; font-size: 2.6rem; color: var(--light-navy); }
+        .q-count { color: #888; font-weight: 700; margin-bottom: 0.5rem; }
+        .q-text { font-size: 1.15rem; margin-bottom: 1.2rem; }
+        .q-options { display: grid; gap: 0.7rem; }
+        .q-opt {
+            border: 2px solid var(--primary-blue); background: #fff; border-radius: 12px;
+            padding: 0.8rem 1rem; cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: 600;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .q-opt:hover:not(:disabled) { background: var(--baby-blue); }
+        .q-opt:disabled { cursor: default; }
+        .q-opt.correct { background: #b8f3d6; border-color: #35c184; }
+        .q-opt.wrong { background: #ffd0d0; border-color: #e07a7a; }
+        .q-fact { margin-top: 1rem; font-size: 0.95rem; color: #444; min-height: 1.2rem; }
+        .q-next, .q-restart { margin-top: 1.3rem; }
+        .score-big { font-size: 3.5rem; font-weight: 800; color: var(--secondary-blue); }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 3rem; }
+            .beaker { font-size: 4.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top bar with a link home -->
+    <div class="topbar">
+        <a href="index.html">&larr; Back to my website</a>
+        <a href="index.html#home">Sofia Shao</a>
+    </div>
+
+    <header>
+        <h1>Laboratory Mess</h1>
+        <p>Mix any 2 or 3 molecules in the beaker and discover REAL chemistry reactions. Find 5 reactions to unlock the quiz!</p>
+    </header>
+
+    <!-- Progress toward the quiz -->
+    <div class="progress-wrap">
+        <div class="progress-label">Reactions discovered: <span id="count">0</span> / 5</div>
+        <div class="progress-dots" id="dots"></div>
+    </div>
+
+    <div class="game">
+        <!-- Mixing area -->
+        <div class="panel mix-area">
+            <h2>Your Beaker</h2>
+            <div class="selected-chips" id="chips"><span class="hint">Click molecules below to add them (pick 2 or 3)</span></div>
+            <div id="stage">
+                <div class="beaker" id="beaker">&#129514;</div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-mix" id="mixBtn" disabled>Mix!</button>
+                <button class="btn btn-clear" id="clearBtn" disabled>Clear</button>
+            </div>
+            <div class="result" id="result"></div>
+        </div>
+
+        <!-- Molecule shelf -->
+        <div class="panel">
+            <h2>Molecule Shelf</h2>
+            <div class="shelf-grid" id="shelf"></div>
+        </div>
+    </div>
+
+    <!-- Quiz overlay -->
+    <div class="overlay" id="overlay">
+        <div class="quiz-card" id="quizCard"></div>
+    </div>
+
+    <script>
+    /* ==============================================================
+       DATA: 20 molecules
+       Each has an id, display name, chemical formula, and a color.
+       ============================================================== */
+    const MOLECULES = [
+        { id:'hydrogen',  name:'Hydrogen',        formula:'H₂',        color:'#d6ecff' },
+        { id:'oxygen',    name:'Oxygen',          formula:'O₂',        color:'#cfe9ff' },
+        { id:'water',     name:'Water',           formula:'H₂O',       color:'#a8d8ea' },
+        { id:'sodium',    name:'Sodium',          formula:'Na',             color:'#e0e0e6' },
+        { id:'potassium', name:'Potassium',       formula:'K',              color:'#d9d0ea' },
+        { id:'chlorine',  name:'Chlorine',        formula:'Cl₂',       color:'#e3f5c8' },
+        { id:'hcl',       name:'Hydrochloric Acid',formula:'HCl',           color:'#fdf4c4' },
+        { id:'naoh',      name:'Sodium Hydroxide', formula:'NaOH',          color:'#f0f0f0' },
+        { id:'bakingsoda',name:'Baking Soda',     formula:'NaHCO₃',    color:'#f7f7f7' },
+        { id:'vinegar',   name:'Vinegar',         formula:'CH₃COOH',   color:'#fdf0d0' },
+        { id:'peroxide',  name:'Hydrogen Peroxide',formula:'H₂O₂',color:'#dfeefc' },
+        { id:'methane',   name:'Methane',         formula:'CH₄',       color:'#eef0f2' },
+        { id:'magnesium', name:'Magnesium',       formula:'Mg',             color:'#e6e8ea' },
+        { id:'iron',      name:'Iron',            formula:'Fe',             color:'#cdd2d8' },
+        { id:'co2',       name:'Carbon Dioxide',  formula:'CO₂',       color:'#eef1f4' },
+        { id:'copper',    name:'Copper',          formula:'Cu',             color:'#f4d3b3' },
+        { id:'sulfuric',  name:'Sulfuric Acid',   formula:'H₂SO₄',color:'#faf3c0' },
+        { id:'ammonia',   name:'Ammonia',         formula:'NH₃',       color:'#e8f3ec' },
+        { id:'nitrogen',  name:'Nitrogen',        formula:'N₂',        color:'#eef2f6' },
+        { id:'carbon',    name:'Carbon',          formula:'C',              color:'#d3d3d6' },
+    ];
+    const MOL = {}; MOLECULES.forEach(m => MOL[m.id] = m);
+
+    /* ==============================================================
+       DATA: real reactions. Each key is the molecule ids SORTED and
+       joined with '+', so the order you add them doesn't matter.
+       effect = which animation plays.
+       warn = true adds a "don't try at home" safety note.
+       ============================================================== */
+    function key(ids){ return ids.slice().sort().join('+'); }
+
+    const REACTION_LIST = [
+        { ing:['hydrogen','oxygen'], name:'Explosive Combustion', emoji:'💥', effect:'explosion',
+          product:'Water (H₂O)', warn:true,
+          fact:'Hydrogen and oxygen ignite explosively to form water — this is exactly what powered the Space Shuttle’s main engines!' },
+        { ing:['sodium','water'], name:'Violent Reaction', emoji:'🔥', effect:'explosion',
+          product:'Sodium Hydroxide + Hydrogen', warn:true,
+          fact:'Sodium reacts violently with water, releasing hydrogen gas and so much heat that it can burst into flames.' },
+        { ing:['potassium','water'], name:'Lilac Explosion', emoji:'💥', effect:'explosion',
+          product:'Potassium Hydroxide + Hydrogen', warn:true,
+          fact:'Potassium is even more reactive than sodium — it ignites instantly and burns with a lilac-purple flame.' },
+        { ing:['sodium','chlorine'], name:'Making Table Salt', emoji:'✨', effect:'light',
+          product:'Sodium Chloride (NaCl)', warn:false,
+          fact:'A metal that explodes in water plus a poisonous green gas react to form ordinary, edible table salt!' },
+        { ing:['bakingsoda','vinegar'], name:'Fizzy Eruption', emoji:'🫧', effect:'fizz',
+          product:'Carbon Dioxide + Water', warn:false,
+          fact:'Baking soda and vinegar make carbon dioxide gas — the classic bubbly volcano at every science fair.' },
+        { ing:['hcl','naoh'], name:'Neutralization', emoji:'💧', effect:'neutralize',
+          product:'Salt + Water', warn:false,
+          fact:'A strong acid meets a strong base and they cancel out (neutralize) into salt and water, giving off heat.' },
+        { ing:['magnesium','oxygen'], name:'Blinding White Light', emoji:'☀️', effect:'light',
+          product:'Magnesium Oxide (MgO)', warn:true,
+          fact:'Burning magnesium gives off blindingly bright white light — which is why it’s used in fireworks and emergency flares.' },
+        { ing:['methane','oxygen'], name:'Clean Flame', emoji:'🔥', effect:'flame',
+          product:'Carbon Dioxide + Water', warn:false,
+          fact:'Methane burning in oxygen is the blue flame on a gas stove. It releases carbon dioxide and water.' },
+        { ing:['carbon','oxygen'], name:'Burning Carbon', emoji:'🔥', effect:'flame',
+          product:'Carbon Dioxide (CO₂)', warn:false,
+          fact:'Carbon burns in oxygen to release energy and carbon dioxide — just like a campfire or a charcoal grill.' },
+        { ing:['peroxide','copper'], name:'Oxygen Foam', emoji:'🫧', effect:'fizz',
+          product:'Water + Oxygen', warn:false,
+          fact:'Copper acts as a catalyst, speeding up hydrogen peroxide breaking down into water and a foamy burst of oxygen.' },
+        { ing:['ammonia','hcl'], name:'White Smoke', emoji:'💨', effect:'smoke',
+          product:'Ammonium Chloride', warn:false,
+          fact:'Ammonia gas and hydrogen chloride gas meet in mid-air and form a cloud of white smoke — with no fire at all!' },
+        { ing:['iron','oxygen','water'], name:'Rusting', emoji:'🟤', effect:'rust',
+          product:'Iron Oxide (Rust)', warn:false,
+          fact:'Iron only rusts when BOTH oxygen AND water are present — that’s why perfectly dry iron doesn’t rust.' },
+        { ing:['nitrogen','hydrogen'], name:'Making Ammonia', emoji:'💨', effect:'smoke',
+          product:'Ammonia (NH₃)', warn:false,
+          fact:'Under high pressure, nitrogen and hydrogen combine into ammonia — the Haber process that makes fertilizer to feed the world.' },
+        { ing:['copper','oxygen'], name:'Slow Patina', emoji:'🟢', effect:'rust',
+          product:'Copper Oxide', warn:false,
+          fact:'Copper reacts slowly with oxygen and, over many years, turns green — exactly like the Statue of Liberty.' },
+        { ing:['sulfuric','magnesium'], name:'Bubbling Acid', emoji:'🫧', effect:'fizz',
+          product:'Hydrogen Gas + Salt', warn:true,
+          fact:'Sulfuric acid reacts with magnesium metal and fizzes, bubbling off hydrogen gas.' },
+        { ing:['hydrogen','chlorine'], name:'Photo Explosion', emoji:'💥', effect:'explosion',
+          product:'Hydrogen Chloride (HCl)', warn:true,
+          fact:'A mix of hydrogen and chlorine gas can explode when exposed to bright light, forming hydrogen chloride.' },
+    ];
+
+    const REACTIONS = {};
+    REACTION_LIST.forEach(r => { REACTIONS[key(r.ing)] = r; });
+
+    /* ==============================================================
+       GAME STATE
+       ============================================================== */
+    let selected = [];               // ids currently in the beaker (max 3)
+    const discovered = [];           // reaction objects the player has found (unique)
+    const discoveredKeys = new Set();
+    const NEEDED = 5;
+
+    /* ---------- Build the molecule shelf ---------- */
+    const shelf = document.getElementById('shelf');
+    MOLECULES.forEach(m => {
+        const b = document.createElement('button');
+        b.className = 'molecule';
+        b.style.background = m.color;
+        b.dataset.id = m.id;
+        b.innerHTML = `<span class="formula">${m.formula}</span><span class="mname">${m.name}</span>`;
+        b.addEventListener('click', () => toggleMolecule(m.id));
+        shelf.appendChild(b);
+    });
+
+    /* ---------- Build progress dots ---------- */
+    const dotsEl = document.getElementById('dots');
+    for (let i = 0; i < NEEDED; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot';
+        d.textContent = i + 1;
+        dotsEl.appendChild(d);
+    }
+
+    const chipsEl = document.getElementById('chips');
+    const mixBtn = document.getElementById('mixBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const resultEl = document.getElementById('result');
+    const beaker = document.getElementById('beaker');
+    const stage = document.getElementById('stage');
+
+    /* ---------- Select / deselect a molecule ---------- */
+    function toggleMolecule(id) {
+        const idx = selected.indexOf(id);
+        if (idx >= 0) {
+            selected.splice(idx, 1);            // remove if already picked
+        } else {
+            if (selected.length >= 3) return;   // max 3
+            selected.push(id);
+        }
+        renderSelection();
+    }
+
+    function renderSelection() {
+        // chips
+        if (selected.length === 0) {
+            chipsEl.innerHTML = '<span class="hint">Click molecules below to add them (pick 2 or 3)</span>';
+        } else {
+            chipsEl.innerHTML = '';
+            selected.forEach(id => {
+                const c = document.createElement('span');
+                c.className = 'chip';
+                c.innerHTML = `${MOL[id].formula} <button title="remove">&times;</button>`;
+                c.querySelector('button').addEventListener('click', () => toggleMolecule(id));
+                chipsEl.appendChild(c);
+            });
+        }
+        // highlight shelf buttons + disable others when 3 are picked
+        document.querySelectorAll('.molecule').forEach(btn => {
+            const on = selected.includes(btn.dataset.id);
+            btn.classList.toggle('selected', on);
+            btn.disabled = (!on && selected.length >= 3);
+        });
+        mixBtn.disabled = selected.length < 2;
+        clearBtn.disabled = selected.length === 0;
+    }
+
+    /* ---------- Clear the beaker ---------- */
+    clearBtn.addEventListener('click', () => { selected = []; renderSelection(); });
+
+    /* ---------- Mix! ---------- */
+    mixBtn.addEventListener('click', () => {
+        if (selected.length < 2) return;
+        const k = key(selected);
+        const rxn = REACTIONS[k];
+        if (rxn) {
+            runEffect(rxn.effect);
+            const isNew = !discoveredKeys.has(k);
+            if (isNew) {
+                discoveredKeys.add(k);
+                discovered.push(rxn);
+                updateProgress();
+            }
+            showResult(rxn, isNew);
+            if (discovered.length >= NEEDED) {
+                setTimeout(startQuiz, 1600);
+            }
+        } else {
+            showNoReaction();
+        }
+        selected = [];
+        renderSelection();
+    });
+
+    function updateProgress() {
+        document.getElementById('count').textContent = discovered.length;
+        const dots = dotsEl.children;
+        for (let i = 0; i < NEEDED; i++) {
+            dots[i].classList.toggle('filled', i < discovered.length);
+            if (i < discovered.length) dots[i].textContent = '✓';
+        }
+    }
+
+    function showResult(rxn, isNew) {
+        resultEl.className = 'result show';
+        resultEl.innerHTML =
+            `<div class="r-emoji">${rxn.emoji}</div>
+             <h3>${rxn.name}${isNew ? '' : ' (already discovered)'}</h3>
+             <div class="r-product">You made: ${rxn.product}</div>
+             <div class="r-fact">${rxn.fact}</div>
+             ${rxn.warn ? '<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>' : ''}`;
+    }
+
+    function showNoReaction() {
+        resultEl.className = 'result show norxn';
+        resultEl.innerHTML =
+            `<div class="r-emoji">😶</div>
+             <h3>No reaction</h3>
+             <div class="r-fact">These molecules don’t react under normal conditions — they just mix together. In real chemistry, most random combinations don’t do anything! Try another combo.</div>`;
+    }
+
+    /* ==============================================================
+       VISUAL EFFECTS
+       ============================================================== */
+    function runEffect(type) {
+        beaker.classList.remove('shake');
+        void beaker.offsetWidth; // restart animation
+        const rect = stage.getBoundingClientRect();
+        const cx = rect.width / 2, cy = rect.height - 60;
+
+        if (type === 'explosion') {
+            beaker.classList.add('shake');
+            flash();
+            burst(cx, cy, 34, ['#ff6b35','#ffd23f','#ff2e2e','#ff9e3d'], 3, 9);
+        } else if (type === 'flame') {
+            emojiRise(cx, cy, ['🔥','🔥','🔥']);
+            burst(cx, cy, 14, ['#ff6b35','#ffd23f'], 2, 6);
+        } else if (type === 'fizz') {
+            bubbles(cx, cy, 26, ['#bfe6f7','#ffffff','#d6f0ff']);
+        } else if (type === 'smoke') {
+            emojiRise(cx, cy, ['💨','☁️','💨']);
+        } else if (type === 'light') {
+            flash();
+            burst(cx, cy, 20, ['#ffffff','#fff7cc','#eaf6ff'], 2, 7);
+        } else if (type === 'rust') {
+            beaker.style.filter = 'sepia(1) saturate(3) hue-rotate(-10deg)';
+            setTimeout(() => beaker.style.filter = '', 1400);
+            burst(cx, cy, 14, ['#8a5a2b','#b5651d','#7a3f10'], 2, 5);
+        } else if (type === 'neutralize') {
+            bubbles(cx, cy, 12, ['#cde8f7','#ffffff']);
+            emojiRise(cx, cy, ['💧']);
+        }
+    }
+
+    function flash() {
+        const f = document.createElement('div');
+        f.className = 'flash';
+        stage.appendChild(f);
+        setTimeout(() => f.remove(), 500);
+    }
+
+    function burst(cx, cy, n, colors, minR, maxR) {
+        for (let i = 0; i < n; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = minR + Math.random() * (maxR - minR);
+            p.style.width = p.style.height = size + 'px';
+            p.style.background = colors[i % colors.length];
+            p.style.left = cx + 'px';
+            p.style.top = cy + 'px';
+            stage.appendChild(p);
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 60 + Math.random() * 120;
+            const dx = Math.cos(angle) * dist;
+            const dy = Math.sin(angle) * dist - 40;
+            p.animate([
+                { transform: 'translate(0,0)', opacity: 1 },
+                { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+            ], { duration: 700 + Math.random() * 400, easing: 'cubic-bezier(.2,.7,.3,1)' });
+            setTimeout(() => p.remove(), 1100);
+        }
+    }
+
+    function bubbles(cx, cy, n, colors) {
+        for (let i = 0; i < n; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = 6 + Math.random() * 14;
+            p.style.width = p.style.height = size + 'px';
+            p.style.background = colors[i % colors.length];
+            p.style.opacity = 0.8;
+            p.style.left = (cx - 25 + Math.random() * 50) + 'px';
+            p.style.top = cy + 'px';
+            stage.appendChild(p);
+            const dy = -(120 + Math.random() * 90);
+            const dx = (Math.random() - 0.5) * 40;
+            p.animate([
+                { transform: 'translate(0,0)', opacity: 0.85 },
+                { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+            ], { duration: 900 + Math.random() * 700, easing: 'ease-out' });
+            setTimeout(() => p.remove(), 1600);
+        }
+    }
+
+    function emojiRise(cx, cy, emojis) {
+        emojis.forEach((e, i) => {
+            const el = document.createElement('div');
+            el.className = 'emoji-burst';
+            el.textContent = e;
+            el.style.left = (cx - 20 + (i - 1) * 30) + 'px';
+            el.style.top = (cy - 30) + 'px';
+            stage.appendChild(el);
+            el.animate([
+                { transform: 'translateY(0) scale(0.6)', opacity: 0 },
+                { transform: 'translateY(-30px) scale(1.1)', opacity: 1, offset: 0.3 },
+                { transform: 'translateY(-140px) scale(1.2)', opacity: 0 }
+            ], { duration: 1400, easing: 'ease-out', delay: i * 120 });
+            setTimeout(() => el.remove(), 1600);
+        });
+    }
+
+    /* ==============================================================
+       QUIZ  (5 questions about the reactions you discovered)
+       ============================================================== */
+    let quizQuestions = [], quizIndex = 0, quizScore = 0;
+    const overlay = document.getElementById('overlay');
+    const quizCard = document.getElementById('quizCard');
+
+    function comboLabel(ids) {
+        return ids.map(id => MOL[id].name).join(' + ');
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function startQuiz() {
+        // Build one question per discovered reaction (first 5)
+        const chosen = discovered.slice(0, NEEDED);
+        quizQuestions = chosen.map(rxn => {
+            const correct = comboLabel(rxn.ing);
+            // wrong answers: other real combos, then random pairs if needed
+            const pool = REACTION_LIST
+                .filter(r => key(r.ing) !== key(rxn.ing))
+                .map(r => comboLabel(r.ing));
+            shuffle(pool);
+            const options = [correct];
+            for (const opt of pool) {
+                if (options.length >= 4) break;
+                if (!options.includes(opt)) options.push(opt);
+            }
+            while (options.length < 4) {  // safety fallback: random pairs
+                const a = MOLECULES[Math.floor(Math.random()*MOLECULES.length)];
+                const b = MOLECULES[Math.floor(Math.random()*MOLECULES.length)];
+                const lbl = a.name + ' + ' + b.name;
+                if (a !== b && !options.includes(lbl)) options.push(lbl);
+            }
+            return { rxn, correct, options: shuffle(options) };
+        });
+        quizIndex = 0; quizScore = 0;
+        overlay.classList.add('show');
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = quizQuestions[quizIndex];
+        quizCard.innerHTML = `
+            <div class="q-count">Question ${quizIndex + 1} of ${quizQuestions.length}</div>
+            <div class="q-text">${q.rxn.emoji} Which molecules did you mix to make the reaction
+                <strong>&ldquo;${q.rxn.name}&rdquo;</strong> (product: ${q.rxn.product})?</div>
+            <div class="q-options" id="qOptions"></div>
+            <div class="q-fact" id="qFact"></div>
+        `;
+        const optWrap = document.getElementById('qOptions');
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'q-opt';
+            btn.textContent = opt;
+            btn.addEventListener('click', () => answer(btn, q));
+            optWrap.appendChild(btn);
+        });
+    }
+
+    function answer(btn, q) {
+        const buttons = quizCard.querySelectorAll('.q-opt');
+        buttons.forEach(b => {
+            b.disabled = true;
+            if (b.textContent === q.correct) b.classList.add('correct');
+        });
+        if (btn.textContent === q.correct) {
+            quizScore++;
+        } else {
+            btn.classList.add('wrong');
+        }
+        document.getElementById('qFact').textContent = q.rxn.fact;
+        const next = document.createElement('button');
+        next.className = 'btn btn-mix q-next';
+        next.textContent = (quizIndex < quizQuestions.length - 1) ? 'Next question' : 'See my score';
+        next.addEventListener('click', () => {
+            quizIndex++;
+            if (quizIndex < quizQuestions.length) renderQuestion();
+            else showScore();
+        });
+        quizCard.appendChild(next);
+    }
+
+    function showScore() {
+        let msg = 'Nice mixing!';
+        if (quizScore === 5) msg = 'Perfect score — you’re a real chemist! 🧪';
+        else if (quizScore >= 3) msg = 'Great memory! 👏';
+        else msg = 'Good try — play again to remember more!';
+        quizCard.innerHTML = `
+            <h2>Quiz Complete</h2>
+            <div class="score-big">${quizScore} / 5</div>
+            <p>${msg}</p>
+            <button class="btn btn-mix q-restart" id="restartBtn">Play again</button>
+        `;
+        document.getElementById('restartBtn').addEventListener('click', restart);
+    }
+
+    function restart() {
+        overlay.classList.remove('show');
+        discovered.length = 0;
+        discoveredKeys.clear();
+        selected = [];
+        updateProgress();
+        renderSelection();
+        resultEl.className = 'result';
+        resultEl.innerHTML = '';
+    }
+    </script>
+</body>
+</html>
