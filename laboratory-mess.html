@@ -71,6 +71,14 @@
         .result .r-product { font-weight:700; } .result .r-fact { margin-top:.4rem; color:#444; }
         .result .r-warn { margin-top:.5rem; color:#b5651d; font-weight:700; font-size:.9rem; }
         .result.norxn { border-left-color:#bbb; }
+        .result .r-head { display:flex; align-items:flex-start; gap:.6rem; }
+        .result .mol3d { display:block; margin:.7rem auto; background:radial-gradient(circle at 50% 38%, #f4f9fd, #e6eef6); border-radius:12px; box-shadow:inset 0 0 0 1px #e0e6ec; }
+        .result .r-sec { margin-top:.7rem; font-size:.9rem; color:#333; line-height:1.5; }
+        .result .r-sec b { color:var(--light-navy); }
+        .result .r-steps { margin:.35rem 0 0 1.2rem; }
+        .result .r-steps li { margin:.22rem 0; }
+        .result .r-note { margin-top:.8rem; font-size:.76rem; color:#8a8f96; font-style:italic; }
+        .disclaimer { font-size:.82rem; color:#8a8f96; font-style:italic; margin-top:.5rem; }
         .guide .g-intro { font-size:.85rem; color:#777; text-align:center; margin-bottom:.5rem; }
         .guide ul { list-style:none; }
         .guide li { padding:.5rem 0; border-bottom:1px dashed #e2e6ea; font-size:.95rem; display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; }
@@ -112,6 +120,7 @@
     <header>
         <h1>Laboratory Mess</h1>
         <p>Pick 2 elements from the periodic table and hit Mix! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
+        <p class="disclaimer">&#9432; This is a learning game — some facts are simplified for the sake of the game.</p>
     </header>
     <div class="progress-wrap">
         <div class="progress-label">Reactions discovered: <span id="count">0</span> / 5</div>
@@ -272,8 +281,8 @@
         {els:['Ca','F'], name:'Glowing Fluorite', emoji:'⚡', effect:'light', warn:false, product:'Calcium Fluoride, CaF₂', fact:'The mineral fluorite — it glows under UV light and is used to make special camera and telescope lenses.'},
         // --- Metal + oxygen ---
         {els:['Mg','O'], name:'Blinding White Light', emoji:'☀️', effect:'light', warn:true, product:'Magnesium Oxide, MgO', fact:'Burning magnesium gives off blindingly bright white light — used in fireworks, flares, and old camera flashes!'},
-        {els:['Fe','O'], name:'Rust', emoji:'🟤', effect:'rust', warn:false, product:'Iron Oxide, Fe₂O₃', fact:'The reddish-brown rust that slowly eats away old bikes, nails, and cars when iron meets oxygen.'},
-        {els:['Cu','O'], name:'Statue-of-Liberty Green', emoji:'🟤', effect:'rust', warn:false, product:'Copper Oxide, CuO', fact:'Copper turns black when heated and slowly green outdoors — that is why the Statue of Liberty is green!'},
+        {els:['Fe','O'], name:'Rust', emoji:'🟤', effect:'rust', warn:false, product:'Iron Oxide, Fe₂O₃', fact:'When iron meets oxygen it forms reddish-brown iron oxide. Real rust also needs water — that is why iron stays shiny in a dry place but rusts out in the rain.'},
+        {els:['Cu','O'], name:'Copper Oxide', emoji:'🟤', effect:'rust', warn:false, product:'Copper Oxide, CuO', fact:'Heating copper in air makes black copper oxide. (Fun fact: the green on the Statue of Liberty is NOT this — that green is a different coating called "patina" that slowly builds up over many years from air and rain.)'},
         {els:['Al','O'], name:'Rubies & Sapphires', emoji:'☀️', effect:'light', warn:false, product:'Aluminum Oxide, Al₂O₃', fact:'Forms a tough invisible shield that protects aluminum from rusting — and it is the same stuff rubies and sapphires are made of!'},
         {els:['Ca','O'], name:'Quicklime (Limelight)', emoji:'☀️', effect:'light', warn:false, product:'Calcium Oxide, CaO', fact:'Called "quicklime" — used to make cement, and it glows so bright when heated that old theaters used it as "limelight."'},
         {els:['S','O'], name:'Struck-Match Smell', emoji:'💨', effect:'smoke', warn:false, product:'Sulfur Dioxide, SO₂', fact:'The sharp smell of a just-struck match. Too much of it in the air causes acid rain.'},
@@ -354,26 +363,26 @@
         if (O) {
             const m = els.find(e => e !== O);
             if (m.cat === 'alkali')
-                return { name:'Burning Metal', emoji:'🔥', effect:'flame', warn:false, product:`${m.name} oxide, ${m.sym}₂O`, fact:`${m.name} catches fire in oxygen to form ${m.name} oxide.` };
+                return { name:'Burning Metal', emoji:'🔥', effect:'flame', warn:false, product:`${m.name} oxide, ${m.sym}₂O`, fact:`${m.name} is so reactive it catches fire in oxygen. (Lithium forms a simple oxide, but sodium and the heavier ones actually form fancier "peroxides" and "superoxides".)` };
             if (m.cat === 'alkaline')
                 return { name:'Metal Oxide', emoji:'☀️', effect:'light', warn:false, product:`${m.name} oxide, ${m.sym}O`, fact:`${m.name} burns brightly in oxygen to form ${m.name} oxide.` };
             if (m.cat === 'transition' || m.cat === 'postt')
-                return { name:'Rust / Oxide', emoji:'🟤', effect:'rust', warn:false, product:`${m.name} oxide`, fact:`${m.name} reacts with oxygen to form ${m.name} oxide — a kind of rust or tarnish.` };
+                return { name:'Rust / Oxide', emoji:'🟤', effect:'rust', warn:false, product:`${m.name} oxide, ${m.sym}O`, fact:`${m.name} reacts with oxygen to form ${m.name} oxide — a kind of rust or tarnish.` };
             if (m.cat === 'lanth')
-                return { name:'Rare-Earth Oxide', emoji:'✨', effect:'light', warn:false, product:`${m.name} oxide`, fact:`${m.name} is a "rare earth" metal. With oxygen it forms ${m.name} oxide — rare earths are prized for magnets, screens, lasers, and batteries.` };
+                return { name:'Rare-Earth Oxide', emoji:'✨', effect:'light', warn:false, product:`${m.name} oxide, ${m.sym}₂O₃`, fact:`${m.name} is a "rare earth" metal. With oxygen it forms ${m.name} oxide — rare earths are prized for magnets, screens, lasers, and batteries.` };
             if (m.cat === 'actin')
-                return { name:'Radioactive Oxide', emoji:'☢️', effect:'glow', warn:true, product:`${m.name} oxide`, fact:`${m.name} is a radioactive actinide. With oxygen it forms ${m.name} oxide — most actinides are human-made and used in nuclear science or research.` };
+                return { name:'Radioactive Oxide', emoji:'☢️', effect:'glow', warn:true, product:`${m.name} oxide, ${m.sym}O₂`, fact:`${m.name} is a radioactive actinide. With oxygen it forms ${m.name} oxide — most actinides are human-made and used in nuclear science or research.` };
             if (m.cat === 'metalloid')
-                return { name:'Oxide', emoji:'🪟', effect:'light', warn:false, product:`${m.name} oxide`, fact:`${m.name} is a metalloid — halfway between a metal and a nonmetal. With oxygen it forms ${m.name} oxide (silicon's oxide is sand and glass!).` };
+                return { name:'Oxide', emoji:'🪟', effect:'light', warn:false, product:`${m.name} oxide, ${m.sym}O₂`, fact:`${m.name} is a metalloid — halfway between a metal and a nonmetal. With oxygen it forms ${m.name} oxide (silicon's oxide is sand and glass!).` };
         }
         // metalloid / post-transition metal + halogen -> salt
         const GH = els.find(e => e.cat === 'metalloid' || e.cat === 'postt');
         if (GH && X && GH !== X)
-            return { name:'Halide Salt', emoji:'🧂', effect:'light', warn:false, product:`${GH.name} ${HALIDE[X.sym]}`, fact:`${GH.name} bonds with ${X.name.toLowerCase()} to form ${GH.name} ${HALIDE[X.sym]}, a salt.` };
+            return { name:'Halide Salt', emoji:'🧂', effect:'light', warn:false, product:`${GH.name} ${HALIDE[X.sym]}, ${GH.sym}${X.sym}₃`, fact:`${GH.name} bonds with ${X.name.toLowerCase()} to form ${GH.name} ${HALIDE[X.sym]}, a salt.` };
         // rare-earth / actinide + halogen -> halide
         const RE = els.find(e => e.cat === 'lanth' || e.cat === 'actin');
         if (RE && X && RE !== X)
-            return { name: RE.cat === 'actin' ? 'Radioactive Halide' : 'Rare-Earth Halide', emoji: RE.cat === 'actin' ? '☢️' : '✨', effect: RE.cat === 'actin' ? 'glow' : 'light', warn: RE.cat === 'actin', product:`${RE.name} ${HALIDE[X.sym]}`, fact:`${RE.name} bonds with ${X.name.toLowerCase()} to form ${RE.name} ${HALIDE[X.sym]}, a salt.` };
+            return { name: RE.cat === 'actin' ? 'Radioactive Halide' : 'Rare-Earth Halide', emoji: RE.cat === 'actin' ? '☢️' : '✨', effect: RE.cat === 'actin' ? 'glow' : 'light', warn: RE.cat === 'actin', product:`${RE.name} ${HALIDE[X.sym]}, ${RE.sym}${X.sym}₃`, fact:`${RE.name} bonds with ${X.name.toLowerCase()} to form ${RE.name} ${HALIDE[X.sym]}, a salt.` };
         // hydrogen + halogen -> acid gas
         if (H && X && H !== X)
             return { name:'Acid Gas', emoji:'💨', effect:'smoke', warn:false, product:`Hydrogen ${HALIDE[X.sym]}, H${X.sym}`, fact:`Hydrogen joins with ${X.name.toLowerCase()} to form hydrogen ${HALIDE[X.sym]}, an acidic gas.` };
@@ -468,7 +477,7 @@
             const k = combo(els[0].sym, els.length>1?els[1].sym:els[0].sym) + (els.length>2?'+'+els[2].sym:'');
             const isNew = !discoveredKeys.has(k);
             if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
-            showResult(rxn, isNew);
+            showResult(rxn, isNew, els);
             if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
         } else if(hasNoble){ showInert(); }
         else showNoReaction();
@@ -477,14 +486,129 @@
 
     function updateProgress(){ document.getElementById('count').textContent=discovered.length;
         const dots=dotsEl.children; for(let i=0;i<NEEDED;i++){ dots[i].classList.toggle('filled', i<discovered.length); if(i<discovered.length) dots[i].textContent='✓'; } }
-    function showResult(rxn,isNew){ resultEl.className='result show';
-        resultEl.innerHTML=`<div class="r-emoji">${rxn.emoji}</div><h3>${rxn.name}${isNew?'':' (already discovered)'}</h3>
-            <div class="r-product">You made: ${rxn.product}</div><div class="r-fact">${rxn.fact}</div>
-            ${rxn.warn?'<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>':''}`; }
-    function showInert(){ resultEl.className='result show norxn';
+    /* ===== Reaction detail: conditions + step-by-step, chosen by reaction type ===== */
+    const metalCats = ['alkali','alkaline','transition','postt','lanth','actin'];
+    function typeOf(els){
+        const isMetal = e => metalCats.includes(e.cat);
+        const has = s => els.some(e=>e.sym===s);
+        const hasCat = c => els.some(e=>e.cat===c);
+        if (has('O')) {
+            const other = els.find(e=>e.sym!=='O') || els[0];
+            if (other.sym==='H') return 'burn';
+            if (other.sym==='C' || other.sym==='S') return 'combustion';
+            if (other.sym==='N') return 'synthesis';
+            return 'oxide';
+        }
+        if (hasCat('halogen')) {
+            const other = els.find(e=>e.cat!=='halogen') || els[0];
+            if (other.sym==='H') return 'acidgas';
+            return 'salt';
+        }
+        if (has('H') && (has('N')||has('S'))) return 'synthesis';
+        if (els.every(isMetal)) return 'alloy';
+        return 'combine';
+    }
+    const NEEDS = {
+        salt:'A quick spark or a little heat to get it started — then it gives off so much energy it keeps itself going.',
+        oxide:'Oxygen from the air, plus usually some heat to kick it off (the most reactive metals burn all on their own).',
+        combustion:'Oxygen and a spark or flame to reach the "ignition" temperature.',
+        burn:'A spark or flame — the gases can sit together safely until something ignites them.',
+        acidgas:'The two gases mixed together, plus light or heat to start a chain reaction.',
+        synthesis:'Often high pressure, high heat, and a catalyst (a helper that speeds things up without being used up).',
+        alloy:'Melting the metals together at high heat, then cooling them — for magnets, inside a strong magnetic field.',
+        combine:'Usually some heat to get the atoms moving and reacting.'
+    };
+    const STEPS = {
+        salt:['The metal atom gives away one or more of its outer electrons.','The halogen atom grabs those electrons, so both now have full, stable shells.','The metal becomes a positive ion (+) and the halogen a negative ion (−).','Opposite charges attract, snapping the ions into a repeating crystal grid — a salt!'],
+        oxide:['Oxygen molecules (O₂) split into single oxygen atoms.','Metal atoms hand their outer electrons to the oxygen atoms.','The positive metal ions and negative oxide ions bond into a solid oxide.'],
+        combustion:['Heat gives the atoms enough energy to break their starting bonds.','The atoms grab onto oxygen atoms.','New bonds form and release lots of energy as heat and light — that\'s the fire!'],
+        burn:['A spark splits some of the H₂ and O₂ molecules into atoms.','Each oxygen atom grabs two hydrogen atoms.','They bond into water and release a huge burst of energy — boom!'],
+        acidgas:['Light or heat splits a halogen molecule into two reactive atoms.','A halogen atom steals a hydrogen from a hydrogen molecule.','This keeps chaining until you have hydrogen-halide gas (like HCl).'],
+        synthesis:['The starting molecules are pulled apart into atoms.','The atoms rearrange into a brand-new combination.','They bond together into the new compound.'],
+        alloy:['The metals are melted and blended into a liquid mixture.','As it cools, the atoms lock into a special crystal pattern.','A strong magnetic field lines up the crystals so the whole piece becomes a powerful magnet.'],
+        combine:['Heat energizes the atoms so they start moving fast.','The atoms share or swap electrons.','They bond together into the new compound.']
+    };
+
+    /* ===== Simple rotating 3D ball-and-stick model, built from the product formula ===== */
+    const CPK = { H:'#f2f2f2', O:'#ff4d4d', N:'#4d70ff', C:'#3a3a3a', S:'#ffd633', F:'#7ee87e', Cl:'#3ccf3c', Br:'#b5642f', I:'#8a3fbf', P:'#ff8000', B:'#ffb0b0', Si:'#c9a96b', Na:'#ab5cf2', K:'#8f40d4', Li:'#cc6688', Ca:'#4fd24f', Mg:'#8fd24f', Fe:'#e06633', Cu:'#c88033', Al:'#bfc4cc' };
+    const RAD = { H:9, O:15, N:15, C:16, S:19, F:13, Cl:17, Br:19, I:21, Na:20, K:22 };
+    const SUB = '₀₁₂₃₄₅₆₇₈₉';
+    function extractFormula(product){
+        const paren = product.match(/\(([^)]+)\)/);
+        const f = paren ? paren[1] : (product.includes(',') ? product.split(',').pop() : product);
+        return f.trim();
+    }
+    function buildMolecule(product){
+        const raw = extractFormula(product).replace(/[₀-₉]/g, d => String(SUB.indexOf(d)));
+        const re = /([A-Z][a-z]?)(\d*)/g; let m; const counts = [];
+        while ((m = re.exec(raw))) { if (EL[m[1]]) counts.push([m[1], Math.min(parseInt(m[2]||'1'), 3)]); }
+        let atoms = [];
+        counts.forEach(([el,c]) => { for (let i=0;i<c;i++) atoms.push(el); });
+        atoms = atoms.slice(0, 8);
+        if (atoms.length < 2) return null;
+        let ci = atoms.findIndex(a => a!=='O' && a!=='H'); if (ci < 0) ci = 0;
+        const center = atoms[ci];
+        const others = atoms.filter((a,i) => i !== ci);
+        const pos = [{ el:center, x:0, y:0, z:0 }]; const bonds = []; const n = others.length;
+        others.forEach((el,k) => {
+            let x,y,z;
+            if (n===1){ x=1.7; y=0; z=0; }
+            else if (n===2){ x=(k?1:-1)*1.4; y=-0.6; z=0; }
+            else { const gr=(Math.sqrt(5)-1)/2, yy=1-(k/(n-1))*2, r=Math.sqrt(Math.max(0,1-yy*yy)), th=2*Math.PI*gr*k; x=Math.cos(th)*r*1.9; y=yy*1.7; z=Math.sin(th)*r*1.9; }
+            pos.push({ el, x, y, z }); bonds.push([0, pos.length-1]);
+        });
+        return { atoms:pos, bonds };
+    }
+    let mol3dRAF = null;
+    function startMol3d(canvas, mol){
+        cancelAnimationFrame(mol3dRAF);
+        const ctx = canvas.getContext('2d'), W=canvas.width, H=canvas.height;
+        let ang = 0;
+        function frame(){
+            ctx.clearRect(0,0,W,H);
+            const cs=Math.cos(ang), sn=Math.sin(ang), tilt=0.4, ct=Math.cos(tilt), st=Math.sin(tilt);
+            const pr = mol.atoms.map(a=>{
+                const x=a.x*cs - a.z*sn, z=a.x*sn + a.z*cs, y=a.y;
+                const y2=y*ct - z*st, z2=y*st + z*ct, f=320/(320 + z2*36), scale=34;
+                return { el:a.el, sx:W/2 + x*scale*f, sy:H/2 + y2*scale*f, z:z2, r:(RAD[a.el]||17)*f };
+            });
+            ctx.lineWidth=7; ctx.strokeStyle='#c7d0da'; ctx.lineCap='round';
+            mol.bonds.forEach(([i,j])=>{ ctx.beginPath(); ctx.moveTo(pr[i].sx,pr[i].sy); ctx.lineTo(pr[j].sx,pr[j].sy); ctx.stroke(); });
+            [...pr.keys()].sort((a,b)=>pr[a].z-pr[b].z).forEach(k=>{
+                const p=pr[k], col=CPK[p.el]||'#9aa4ad';
+                const g=ctx.createRadialGradient(p.sx-p.r*0.35, p.sy-p.r*0.35, p.r*0.2, p.sx, p.sy, p.r);
+                g.addColorStop(0,'#ffffff'); g.addColorStop(0.4,col); g.addColorStop(1,col);
+                ctx.beginPath(); ctx.arc(p.sx,p.sy,p.r,0,7); ctx.fillStyle=g; ctx.fill();
+                ctx.fillStyle = (p.el==='H'||p.el==='O'||p.el==='N'||p.el==='F') ? '#1a2332' : '#fff';
+                ctx.font=`bold ${Math.round(p.r*0.9)}px Segoe UI, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText(p.el, p.sx, p.sy);
+            });
+            ang += 0.02; mol3dRAF = requestAnimationFrame(frame);
+        }
+        frame();
+    }
+
+    function showResult(rxn, isNew, els){
+        const type = typeOf(els);
+        const mol = buildMolecule(rxn.product);
+        resultEl.className='result show';
+        resultEl.innerHTML=`
+            <div class="r-head"><span class="r-emoji">${rxn.emoji}</span>
+                <div><h3>${rxn.name}${isNew?'':' (already discovered)'}</h3>
+                <div class="r-product">You made: ${rxn.product}</div></div></div>
+            <canvas class="mol3d" id="mol3d" width="250" height="175"></canvas>
+            <div class="r-sec"><b>🔬 What it is &amp; what it's used for:</b> ${rxn.fact}</div>
+            <div class="r-sec"><b>⚗️ What you need to make it happen:</b> ${NEEDS[type]}</div>
+            <div class="r-sec"><b>🧪 How it happens, step by step:</b><ol class="r-steps">${STEPS[type].map(s=>`<li>${s}</li>`).join('')}</ol></div>
+            ${rxn.warn?'<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>':''}
+            <div class="r-note">&#9432; Some facts are simplified for the sake of the game.</div>`;
+        const canvas = document.getElementById('mol3d');
+        if (mol) startMol3d(canvas, mol); else canvas.style.display='none';
+    }
+    function showInert(){ cancelAnimationFrame(mol3dRAF); resultEl.className='result show norxn';
         resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>No reaction — it's a noble gas!</h3>
             <div class="r-fact">Noble gases (helium, neon, argon...) already have a full set of electrons, so they almost never react. That's why they're called "inert"!</div>`; }
-    function showNoReaction(){ resultEl.className='result show norxn';
+    function showNoReaction(){ cancelAnimationFrame(mol3dRAF); resultEl.className='result show norxn';
         resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>No reaction</h3>
             <div class="r-fact">These don't react under normal conditions. Check the Reaction Guide for combos that DO react — in real chemistry, most random mixtures do nothing!</div>`; }
 
