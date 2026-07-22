@@ -466,7 +466,7 @@
     const resultEl=document.getElementById('result'), beaker=document.getElementById('beaker'), stage=document.getElementById('stage'), dotsEl=document.getElementById('dots');
     for (let i=0;i<NEEDED;i++){ const d=document.createElement('div'); d.className='dot'; d.textContent=i+1; dotsEl.appendChild(d); }
 
-    function toggleEl(sym){ const i=selected.indexOf(sym); if(i>=0) selected.splice(i,1); else { if(selected.length>=3) return; selected.push(sym); } render(); }
+    function toggleEl(sym){ const i=selected.indexOf(sym); if(i>=0) selected.splice(i,1); else { if(selected.length>=2) return; selected.push(sym); } render(); }
     function render(){
         if(!selected.length) chipsEl.innerHTML='<span class="hint">Click 2 elements above</span>';
         else { chipsEl.innerHTML=''; selected.forEach(sym=>{ const c=document.createElement('span'); c.className='chip';
