@@ -315,6 +315,19 @@
         {els:['Cm','O'], name:'Purple Glow', emoji:'☢️', effect:'glow', warn:true, product:'Curium Oxide, Cm₂O₃', fact:'Curium glows purple in the dark from its own radioactivity and powered instruments on the Mars rovers.'},
         {els:['Bk','O'], name:'Element Maker', emoji:'☢️', effect:'glow', warn:true, product:'Berkelium Oxide, BkO₂', fact:'Berkelium is human-made and was used as a target to create the superheavy element Tennessine (117).'},
         {els:['Cf','O'], name:'Gold Finder', emoji:'☢️', effect:'glow', warn:true, product:'Californium Oxide, Cf₂O₃', fact:'Californium is a powerful neutron source used to find gold and oil underground and to start up nuclear reactors.'},
+        // --- Metalloids (the teal-green "in-between" elements) ---
+        {els:['Si','O'], name:'Sand & Glass!', emoji:'🏖️', effect:'light', warn:false, product:'Silicon Dioxide, SiO₂', fact:'Silicon + oxygen makes silicon dioxide — that is sand on the beach, quartz crystals, AND every window and glass cup!'},
+        {els:['B','O'], name:'Heat-Proof Glass', emoji:'🔥', effect:'light', warn:false, product:'Boron Oxide, B₂O₃', fact:'Boron oxide makes glass that can handle sudden heat without cracking — like Pyrex measuring cups.'},
+        {els:['Ge','O'], name:'Fiber-Optic Lens', emoji:'💡', effect:'light', warn:false, product:'Germanium Dioxide, GeO₂', fact:'Germanium dioxide bends light really well, so it is used in camera lenses and fiber-optic internet cables.'},
+        {els:['As','O'], name:'Ancient Poison', emoji:'☠️', effect:'smoke', warn:true, product:'Arsenic Oxide, As₂O₃', fact:'Arsenic oxide is a famous historical poison — but tiny amounts are useful in electronics.'},
+        {els:['Sb','O'], name:'Flame Retardant', emoji:'🧯', effect:'light', warn:false, product:'Antimony Oxide, Sb₂O₃', fact:'Antimony oxide is added to plastics and fabrics to stop them from catching fire.'},
+        {els:['Te','O'], name:'Solar Panel', emoji:'☀️', effect:'light', warn:false, product:'Tellurium Oxide, TeO₂', fact:'Tellurium is used in some solar panels to turn sunlight into electricity.'},
+        // --- Post-transition metals (the light-green everyday metals) ---
+        {els:['Ga','O'], name:'LED Light', emoji:'💡', effect:'light', warn:false, product:'Gallium Oxide, Ga₂O₃', fact:'Gallium makes the LEDs and lasers in your phone, TV remote, and Blu-ray players.'},
+        {els:['In','O'], name:'Touchscreen Coating', emoji:'📱', effect:'light', warn:false, product:'Indium Oxide, In₂O₃', fact:'Indium tin oxide is the clear, electricity-carrying coating that makes touchscreens respond to your finger.'},
+        {els:['Sn','O'], name:'See-Through Conductor', emoji:'📱', effect:'light', warn:false, product:'Tin Oxide, SnO₂', fact:'Tin oxide is transparent but conducts electricity — it helps make touchscreens and energy-saving windows.'},
+        {els:['Pb','O'], name:'Car-Battery Metal', emoji:'🔋', effect:'rust', warn:true, product:'Lead Oxide, PbO', fact:'Lead oxide runs car batteries and once made crystal glass sparkle — but lead is toxic, so it is handled carefully.'},
+        {els:['Bi','O'], name:'Rainbow Crystals', emoji:'🌈', effect:'light', warn:false, product:'Bismuth Oxide, Bi₂O₃', fact:'Bismuth grows stunning rainbow-colored crystals, and it is the "bismol" in Pepto-Bismol tummy medicine!'},
     ];
     const SPECIFIC = {};
     function combo(a,b){ return [a,b].sort().join('+'); }
@@ -350,7 +363,13 @@
                 return { name:'Rare-Earth Oxide', emoji:'✨', effect:'light', warn:false, product:`${m.name} oxide`, fact:`${m.name} is a "rare earth" metal. With oxygen it forms ${m.name} oxide — rare earths are prized for magnets, screens, lasers, and batteries.` };
             if (m.cat === 'actin')
                 return { name:'Radioactive Oxide', emoji:'☢️', effect:'glow', warn:true, product:`${m.name} oxide`, fact:`${m.name} is a radioactive actinide. With oxygen it forms ${m.name} oxide — most actinides are human-made and used in nuclear science or research.` };
+            if (m.cat === 'metalloid')
+                return { name:'Oxide', emoji:'🪟', effect:'light', warn:false, product:`${m.name} oxide`, fact:`${m.name} is a metalloid — halfway between a metal and a nonmetal. With oxygen it forms ${m.name} oxide (silicon's oxide is sand and glass!).` };
         }
+        // metalloid / post-transition metal + halogen -> salt
+        const GH = els.find(e => e.cat === 'metalloid' || e.cat === 'postt');
+        if (GH && X && GH !== X)
+            return { name:'Halide Salt', emoji:'🧂', effect:'light', warn:false, product:`${GH.name} ${HALIDE[X.sym]}`, fact:`${GH.name} bonds with ${X.name.toLowerCase()} to form ${GH.name} ${HALIDE[X.sym]}, a salt.` };
         // rare-earth / actinide + halogen -> halide
         const RE = els.find(e => e.cat === 'lanth' || e.cat === 'actin');
         if (RE && X && RE !== X)
@@ -380,6 +399,8 @@
         {need:[{sym:'H'},{sym:'N'}], emoji:'💨', name:'Ammonia'},
         {need:[{cat:'lanth'},{sym:'O'}], emoji:'✨', name:'a rare-earth oxide (cool uses!)'},
         {need:[{cat:'actin'},{sym:'O'}], emoji:'☢️', name:'a radioactive oxide'},
+        {need:[{cat:'metalloid'},{sym:'O'}], emoji:'🏖️', name:'an oxide (sand & glass!)'},
+        {need:[{cat:'postt'},{sym:'O'}], emoji:'🪨', name:'a metal oxide'},
     ];
 
     /* ===== Build periodic table ===== */
