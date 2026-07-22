@@ -495,16 +495,25 @@
     let quizQuestions=[], quizIndex=0, quizScore=0;
     const overlay=document.getElementById('overlay'), quizCard=document.getElementById('quizCard');
     function pairLabel(syms){ return syms.map(s=>EL[s].name).join(' + '); }
+    function pairKey(syms){ return syms.slice().sort().join('+'); }  // order-independent key
     function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
     function startQuiz(){
         const chosen = discovered.slice(0,NEEDED);
-        const distractPool = SPECIFIC_LIST.map(r=>pairLabel(r.els)).concat(discovered.map(d=>pairLabel(d.els)));
+        // Pool of possible answers as {key,label}. The KEY ignores order, so a pair
+        // never shows up twice (e.g. "Hydrogen + Oxygen" AND "Oxygen + Hydrogen").
+        const poolAll = SPECIFIC_LIST.map(r=>({key:pairKey(r.els), label:pairLabel(r.els)}))
+            .concat(discovered.map(d=>({key:pairKey(d.els), label:pairLabel(d.els)})));
         quizQuestions = chosen.map(d=>{
-            const correct = pairLabel(d.els);
-            const pool = shuffle(distractPool.filter(l=>l!==correct));
-            const options=[correct];
-            for(const o of pool){ if(options.length>=4) break; if(!options.includes(o)) options.push(o); }
-            return { d, correct, options:shuffle(options) };
+            const correctKey = pairKey(d.els);
+            const correct = { key:correctKey, label:pairLabel(d.els) };
+            const seen = new Set([correctKey]);           // block the correct pair (either order) from also being a wrong option
+            const distractors = [];
+            for(const o of shuffle(poolAll.slice())){
+                if(distractors.length>=3) break;
+                if(seen.has(o.key)) continue;             // no duplicate pairs
+                seen.add(o.key); distractors.push(o);
+            }
+            return { d, correctKey, options:shuffle([correct, ...distractors]) };
         });
         quizIndex=0; quizScore=0; overlay.classList.add('show'); renderQuestion();
     }
@@ -513,10 +522,10 @@
             <div class="q-text">${q.d.rxn.emoji} Which two elements did you combine to make <strong>${q.d.rxn.product}</strong>?</div>
             <div class="q-options" id="qOptions"></div><div class="q-fact" id="qFact"></div>`;
         const wrap=document.getElementById('qOptions');
-        q.options.forEach(opt=>{ const btn=document.createElement('button'); btn.className='q-opt'; btn.textContent=opt; btn.addEventListener('click',()=>answer(btn,q)); wrap.appendChild(btn); });
+        q.options.forEach(opt=>{ const btn=document.createElement('button'); btn.className='q-opt'; btn.textContent=opt.label; btn.dataset.key=opt.key; btn.addEventListener('click',()=>answer(btn,q)); wrap.appendChild(btn); });
     }
-    function answer(btn,q){ quizCard.querySelectorAll('.q-opt').forEach(b=>{ b.disabled=true; if(b.textContent===q.correct) b.classList.add('correct'); });
-        if(btn.textContent===q.correct) quizScore++; else btn.classList.add('wrong');
+    function answer(btn,q){ quizCard.querySelectorAll('.q-opt').forEach(b=>{ b.disabled=true; if(b.dataset.key===q.correctKey) b.classList.add('correct'); });
+        if(btn.dataset.key===q.correctKey) quizScore++; else btn.classList.add('wrong');
         document.getElementById('qFact').textContent=q.d.rxn.fact;
         const next=document.createElement('button'); next.className='btn btn-mix'; next.style.marginTop='1.2rem';
         next.textContent=(quizIndex<quizQuestions.length-1)?'Next question':'See my score';
