@@ -54,9 +54,23 @@
         .chip button { background:none; border:none; cursor:pointer; font-weight:800; color:#c0392b; font-size:1rem; }
         .hint { color:#888; font-size:.9rem; }
         #stage { position:relative; height:250px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-        .beaker { position:relative; z-index:2; transition:transform .2s,filter .3s; }
-        .beaker svg { width:128px; height:auto; display:block; }
+        .beaker { position:relative; z-index:2; width:128px; height:156px; transition:transform .2s,filter .3s; cursor:default; }
+        .beaker.drop-hot { transform:scale(1.06); filter:drop-shadow(0 0 10px rgba(120,180,240,.9)); }
+        .beaker svg { width:128px; height:auto; display:block; position:relative; z-index:2; }
         .big-emoji { position:absolute; z-index:6; font-size:5rem; pointer-events:none; }
+        /* colored contents inside the beaker */
+        .beaker-fill { position:absolute; left:21%; right:21%; bottom:6%; height:0; z-index:1; border-radius:5px 5px 10px 10px / 5px 5px 24px 24px; transition:height .45s ease, background .45s ease; overflow:hidden; }
+        .beaker-fill::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg, rgba(255,255,255,.28), rgba(255,255,255,0) 45%); }
+        .beaker-fill.stir { animation: stir .5s ease-in-out 2; }
+        @keyframes stir { 0%,100%{transform:skewX(0)} 25%{transform:skewX(8deg)} 50%{transform:skewX(-8deg)} 75%{transform:skewX(5deg)} }
+        /* the thing that follows your cursor while dragging */
+        .drag-ghost { position:fixed; z-index:300; width:48px; height:48px; transform:translate(-50%,-50%); pointer-events:none; display:flex; align-items:center; justify-content:center; }
+        .drag-ghost .lump { width:44px; height:44px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; }
+        .sub-solid { border-radius:46% 46% 42% 42% / 60% 60% 42% 42%; box-shadow: inset 0 -7px 9px rgba(0,0,0,.28), inset 0 5px 7px rgba(255,255,255,.4); }
+        .sub-liquid { border-radius:50% 50% 50% 50% / 58% 58% 46% 46%; box-shadow: inset 0 -6px 9px rgba(0,0,0,.25), inset 0 6px 9px rgba(255,255,255,.55); }
+        .sub-gas { border-radius:50%; filter:blur(3px); opacity:.55; }
+        .el { touch-action:none; cursor:grab; }
+        .el:active { cursor:grabbing; }
         .beaker.shake { animation:shake .5s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px) rotate(-4deg)} 40%{transform:translateX(12px) rotate(4deg)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
         .controls { margin-top:.6rem; display:flex; gap:.7rem; justify-content:center; }
@@ -122,7 +136,7 @@
     </div>
     <header>
         <h1>Laboratory Mess</h1>
-        <p>Pick 2 elements from the periodic table and hit Mix! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
+        <p>Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form &mdash; a colored powder, liquid, or gas. Drop in a second one and the beaker stirs and reacts! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
         <p class="disclaimer">&#9432; This is a learning game — some facts are simplified for the sake of the game.</p>
     </header>
     <div class="progress-wrap">
@@ -138,8 +152,8 @@
         <div class="cols">
             <div class="panel mix-area">
                 <h2>Your Beaker</h2>
-                <div class="selected-chips" id="chips"><span class="hint">Click 2 elements above</span></div>
-                <div id="stage"><div class="beaker" id="beaker"><svg viewBox="0 0 130 158" fill="none" stroke="#2b2b2b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="selected-chips" id="chips"><span class="hint">Drag 2 elements into the beaker</span></div>
+                <div id="stage"><div class="beaker" id="beaker"><div class="beaker-fill" id="beakerFill"></div><svg viewBox="0 0 130 158" fill="none" stroke="#2b2b2b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 34 C17 30 22 32 27 33 L103 33 C108 33 111 31 113 29"/>
                     <path d="M12 34 C17 39 22 40 27 40"/>
                     <path d="M27 33 L27 130 C27 141 34 148 45 148 L85 148 C96 148 103 141 103 130 L103 33"/>
@@ -156,7 +170,7 @@
                     <rect x="35" y="88" width="31" height="15" rx="4" stroke-width="2"/>
                 </svg></div></div>
                 <div class="controls">
-                    <button class="btn btn-mix" id="mixBtn" disabled>Mix!</button>
+                    <button class="btn btn-mix" id="mixBtn" style="display:none" disabled>Mix!</button>
                     <button class="btn btn-clear" id="clearBtn" disabled>Clear</button>
                 </div>
                 <div class="result" id="result"></div>
@@ -443,8 +457,8 @@
         b.style.background = CATS[el.cat].color; b.dataset.sym = el.sym;
         b.title = el.name + ' — ' + CATS[el.cat].name;
         b.innerHTML = `<span class="en">${el.n}</span><span class="es">${el.sym}</span>`;
-        b.addEventListener('click', () => toggleEl(el.sym));
-        b.addEventListener('mouseenter', () => showTip(el, b));
+        b.addEventListener('pointerdown', (e) => { hideTip(); beginDrag(el.sym, e); });
+        b.addEventListener('mouseenter', () => { if(!dragging) showTip(el, b); });
         b.addEventListener('mouseleave', hideTip);
         ptable.appendChild(b);
     });
@@ -482,32 +496,137 @@
     const resultEl=document.getElementById('result'), beaker=document.getElementById('beaker'), stage=document.getElementById('stage'), dotsEl=document.getElementById('dots');
     for (let i=0;i<NEEDED;i++){ const d=document.createElement('div'); d.className='dot'; d.textContent=i+1; dotsEl.appendChild(d); }
 
-    function toggleEl(sym){ const i=selected.indexOf(sym); if(i>=0) selected.splice(i,1); else { if(selected.length>=2) return; selected.push(sym); } render(); }
+    const beakerFill = document.getElementById('beakerFill');
+    let reacting = false;   // true while a stir+reaction is playing out
+
+    /* ----- Physical form of each element (state + real-ish color) -----
+       state: 'solid' | 'liquid' | 'gas'. If an element could be several,
+       we pick its most common everyday form. Colors are the real colors
+       of the pure element (or a close approximation for the game). */
+    const SUB_OVERRIDE = {
+        // gases
+        H:{s:'gas',c:'#dbe9fb'}, He:{s:'gas',c:'#eef4ff'}, N:{s:'gas',c:'#d3e2f2'},
+        O:{s:'gas',c:'#d9eafb'}, F:{s:'gas',c:'#eef4c9'}, Ne:{s:'gas',c:'#ffd8c4'},
+        Cl:{s:'gas',c:'#d8ea9e'}, Ar:{s:'gas',c:'#e6dcf6'}, Kr:{s:'gas',c:'#e0eaf3'},
+        Xe:{s:'gas',c:'#e6e1f2'}, Rn:{s:'gas',c:'#ece0f2'}, Og:{s:'gas',c:'#e9e9ef'},
+        // liquids
+        Br:{s:'liquid',c:'#8a3311'}, Hg:{s:'liquid',c:'#cdd0d5'},
+        // solids with a distinctive color
+        C:{s:'solid',c:'#2b2b2b'}, P:{s:'solid',c:'#e6cf46'}, S:{s:'solid',c:'#f2df4c'},
+        Se:{s:'solid',c:'#4a2e2a'}, I:{s:'solid',c:'#3d2b52'}, B:{s:'solid',c:'#4a3f38'},
+        Si:{s:'solid',c:'#3f4348'}, As:{s:'solid',c:'#6f6f6f'},
+        Cu:{s:'solid',c:'#b87333'}, Au:{s:'solid',c:'#d4af37'}, Ag:{s:'solid',c:'#d9d9d9'},
+        Fe:{s:'solid',c:'#8a8f94'}, Zn:{s:'solid',c:'#b8bcc0'}, Pb:{s:'solid',c:'#70737a'},
+        Sn:{s:'solid',c:'#cdd0d5'}, Ni:{s:'solid',c:'#b8b8ad'}, Ti:{s:'solid',c:'#b0b3b8'},
+        Cr:{s:'solid',c:'#cfd6dd'}, Bi:{s:'solid',c:'#b0a8c0'}, Mn:{s:'solid',c:'#9a9aa0'},
+        Co:{s:'solid',c:'#b7c0cf'}, K:{s:'solid',c:'#cfcfcf'}, Na:{s:'solid',c:'#d5d5d5'}
+    };
+    const CAT_DEFAULT = {
+        noble:{s:'gas',c:'#eaf1fb'}, metalloid:{s:'solid',c:'#7f8790'},
+        nonmetal:{s:'solid',c:'#9aa0a6'}, halogen:{s:'solid',c:'#4a3550'},
+        alkali:{s:'solid',c:'#cbced3'}, alkaline:{s:'solid',c:'#c6cad0'},
+        transition:{s:'solid',c:'#c2c7cd'}, postt:{s:'solid',c:'#c4c9cf'},
+        lanth:{s:'solid',c:'#c6c9cf'}, actin:{s:'solid',c:'#c2c6cc'}
+    };
+    function getSubstance(sym){ return SUB_OVERRIDE[sym] || CAT_DEFAULT[EL[sym].cat] || {s:'solid',c:'#c2c7cd'}; }
+
+    /* color helpers: blend two hex colors */
+    function hx(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+    function blend(h1,h2){ const a=hx(h1),b=hx(h2); const m=a.map((v,i)=>Math.round((v+b[i])/2)); return 'rgb('+m.join(',')+')'; }
+
+    function toggleEl(sym){ const i=selected.indexOf(sym); if(i>=0){ selected.splice(i,1); render(); } else addSubstance(sym); }
+    function addSubstance(sym){
+        if(reacting) return;
+        if(selected.includes(sym)) return;
+        if(selected.length>=2) return;
+        selected.push(sym);
+        render();
+        if(selected.length===2) stirThenReact();
+    }
     function render(){
-        if(!selected.length) chipsEl.innerHTML='<span class="hint">Click 2 elements above</span>';
+        // chips
+        if(!selected.length) chipsEl.innerHTML='<span class="hint">Drag 2 elements into the beaker</span>';
         else { chipsEl.innerHTML=''; selected.forEach(sym=>{ const c=document.createElement('span'); c.className='chip';
             c.innerHTML=`${sym} <button title="remove">&times;</button>`; c.querySelector('button').addEventListener('click',()=>toggleEl(sym)); chipsEl.appendChild(c); }); }
+        // tile highlight
         document.querySelectorAll('.el').forEach(b=>{ if(b.dataset.sym) b.classList.toggle('selected', selected.includes(b.dataset.sym)); });
-        mixBtn.disabled = selected.length<2; clearBtn.disabled = selected.length===0;
+        // beaker liquid level + color
+        if(!selected.length){ beakerFill.style.height='0'; }
+        else {
+            const subs = selected.map(getSubstance);
+            const col = subs.length===1 ? subs[0].c : blend(subs[0].c, subs[1].c);
+            beakerFill.style.background = col;
+            beakerFill.style.height = selected.length===1 ? '26%' : '46%';
+            // gassy elements look lighter/hazier
+            beakerFill.style.opacity = subs.every(s=>s.s==='gas') ? '.6' : '1';
+        }
+        clearBtn.disabled = selected.length===0 || reacting;
     }
-    clearBtn.addEventListener('click',()=>{ selected=[]; render(); });
+    clearBtn.addEventListener('click',()=>{ if(reacting) return; selected=[]; render(); });
 
-    mixBtn.addEventListener('click',()=>{
-        if(selected.length<2) return;
+    /* stir the beaker, then run the reaction */
+    function stirThenReact(){
+        reacting = true;
+        clearBtn.disabled = true;
+        beakerFill.classList.add('stir');
+        setTimeout(()=>{ beakerFill.classList.remove('stir'); doReaction(); }, 1050);
+    }
+    function doReaction(){
         const els = selected.map(s=>EL[s]);
         const hasNoble = els.some(e=>e.cat==='noble');
         const rxn = reactionFor(els);
         if(rxn){
             runEffect(rxn.effect, rxn.emoji);
-            const k = combo(els[0].sym, els.length>1?els[1].sym:els[0].sym) + (els.length>2?'+'+els[2].sym:'');
+            const k = combo(els[0].sym, els[1].sym);
             const isNew = !discoveredKeys.has(k);
             if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
             showResult(rxn, isNew, els);
             if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
         } else if(hasNoble){ showInert(); }
         else showNoReaction();
-        selected=[]; render();
-    });
+        // clear the beaker for the next mix
+        selected=[]; reacting=false; render();
+    }
+
+    /* ===== Drag and drop ===== */
+    let dragging = false, dragSym = null, ghost = null;
+    function createGhost(sym){
+        const sub = getSubstance(sym);
+        const g = document.createElement('div'); g.className='drag-ghost';
+        const lump = document.createElement('div');
+        lump.className = 'lump sub-'+sub.s;
+        lump.style.background = sub.c;
+        // readable label color on the lump
+        const [r,gg,bb]=hx(sub.c.indexOf('#')===0?sub.c:'#c2c7cd');
+        lump.style.color = (r*0.299+gg*0.587+bb*0.114) > 150 ? '#333' : '#fff';
+        lump.textContent = sym;
+        g.appendChild(lump);
+        document.body.appendChild(g);
+        return g;
+    }
+    function beginDrag(sym, e){
+        if(reacting) return;
+        if(selected.length>=2 || selected.includes(sym)) return;
+        dragging = true; dragSym = sym;
+        ghost = createGhost(sym);
+        moveGhost(e.clientX, e.clientY);
+        window.addEventListener('pointermove', dragMove);
+        window.addEventListener('pointerup', dragUp);
+    }
+    function moveGhost(x,y){ if(ghost){ ghost.style.left=x+'px'; ghost.style.top=y+'px'; } }
+    function dragMove(e){ if(!dragging) return; moveGhost(e.clientX, e.clientY);
+        beaker.classList.toggle('drop-hot', isOverBeaker(e.clientX, e.clientY)); }
+    function isOverBeaker(x,y){ const r=beaker.getBoundingClientRect(); return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom; }
+    function dragUp(e){
+        window.removeEventListener('pointermove', dragMove);
+        window.removeEventListener('pointerup', dragUp);
+        const over = isOverBeaker(e.clientX, e.clientY);
+        if(ghost){ ghost.remove(); ghost=null; }
+        beaker.classList.remove('drop-hot');
+        dragging = false;
+        if(over && dragSym) addSubstance(dragSym);
+        dragSym = null;
+    }
 
     function updateProgress(){ document.getElementById('count').textContent=discovered.length;
         const dots=dotsEl.children; for(let i=0;i<NEEDED;i++){ dots[i].classList.toggle('filled', i<discovered.length); if(i<discovered.length) dots[i].textContent='✓'; } }
