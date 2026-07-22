@@ -53,8 +53,9 @@
         .chip { background:var(--baby-blue); padding:.35rem .8rem; border-radius:20px; font-weight:800; font-size:1rem; display:flex; align-items:center; gap:.4rem; }
         .chip button { background:none; border:none; cursor:pointer; font-weight:800; color:#c0392b; font-size:1rem; }
         .hint { color:#888; font-size:.9rem; }
-        #stage { position:relative; height:180px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
-        .beaker { font-size:5rem; line-height:1; position:relative; z-index:2; transition:transform .2s,filter .3s; }
+        #stage { position:relative; height:250px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
+        .beaker { font-size:6.5rem; line-height:1; position:relative; z-index:2; transition:transform .2s,filter .3s; }
+        .big-emoji { position:absolute; left:50%; top:42%; z-index:6; font-size:5rem; pointer-events:none; }
         .beaker.shake { animation:shake .5s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px) rotate(-4deg)} 40%{transform:translateX(12px) rotate(4deg)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
         .controls { margin-top:.6rem; display:flex; gap:.7rem; justify-content:center; }
@@ -77,8 +78,8 @@
         .tag { padding:.12rem .5rem; border-radius:12px; font-weight:700; font-size:.82rem; white-space:nowrap; }
         .arrow { color:#999; font-weight:700; }
         .particle { position:absolute; border-radius:50%; pointer-events:none; z-index:3; }
-        .flash { position:absolute; inset:0; background:#fff; z-index:4; pointer-events:none; animation:flash .5s ease-out forwards; }
-        @keyframes flash { from{opacity:.9} to{opacity:0} }
+        .flash { position:absolute; inset:0; background:#fff; z-index:4; pointer-events:none; animation:flash .7s ease-out forwards; }
+        @keyframes flash { from{opacity:1} to{opacity:0} }
         .emoji-burst { position:absolute; z-index:3; font-size:2rem; pointer-events:none; }
         .overlay { position:fixed; inset:0; background:rgba(26,35,50,.6); display:none; align-items:center; justify-content:center; z-index:50; padding:1rem; }
         .overlay.show { display:flex; }
@@ -408,7 +409,7 @@
         const hasNoble = els.some(e=>e.cat==='noble');
         const rxn = reactionFor(els);
         if(rxn){
-            runEffect(rxn.effect);
+            runEffect(rxn.effect, rxn.emoji);
             const k = combo(els[0].sym, els.length>1?els[1].sym:els[0].sym) + (els.length>2?'+'+els[2].sym:'');
             const isNew = !discoveredKeys.has(k);
             if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
@@ -433,21 +434,25 @@
             <div class="r-fact">These don't react under normal conditions. Check the Reaction Guide for combos that DO react — in real chemistry, most random mixtures do nothing!</div>`; }
 
     /* ===== Effects ===== */
-    function runEffect(type){ beaker.classList.remove('shake'); void beaker.offsetWidth;
-        const rect=stage.getBoundingClientRect(), cx=rect.width/2, cy=rect.height-45;
-        if(type==='explosion'){ beaker.classList.add('shake'); flash(); burst(cx,cy,34,['#ff6b35','#ffd23f','#ff2e2e','#ff9e3d'],3,9); }
-        else if(type==='flame'){ emojiRise(cx,cy,['🔥','🔥','🔥']); burst(cx,cy,14,['#ff6b35','#ffd23f'],2,6); }
-        else if(type==='smoke'){ emojiRise(cx,cy,['💨','☁️','💨']); }
-        else if(type==='light'){ flash(); burst(cx,cy,20,['#fff','#fff7cc','#eaf6ff'],2,7); }
-        else if(type==='rust'){ beaker.style.filter='sepia(1) saturate(3) hue-rotate(-10deg)'; setTimeout(()=>beaker.style.filter='',1400); burst(cx,cy,14,['#8a5a2b','#b5651d','#7a3f10'],2,5); }
-        else if(type==='glow'){ beaker.style.filter='drop-shadow(0 0 14px #7CFC00)'; setTimeout(()=>beaker.style.filter='',1500); flash(); burst(cx,cy,24,['#7CFC00','#adff2f','#00ff7f','#dfffd0'],2,7); emojiRise(cx,cy,['☢️']); }
-        else if(type==='magnet'){ emojiRise(cx,cy,['🧲']); burst(cx,cy,18,['#9db4c9','#c0d0e0','#7ec8e3','#5a7d99'],2,6); }
+    function runEffect(type, emoji){ beaker.classList.remove('shake'); void beaker.offsetWidth;
+        const rect=stage.getBoundingClientRect(), cx=rect.width/2, cy=rect.height-60;
+        if(emoji) bigEmoji(emoji);   // big central emoji so the reaction is impossible to miss
+        if(type==='explosion'){ beaker.classList.add('shake'); flash('#fff'); burst(cx,cy,48,['#ff6b35','#ffd23f','#ff2e2e','#ff9e3d'],5,16); }
+        else if(type==='flame'){ emojiRise(cx,cy,['🔥','🔥','🔥','🔥']); burst(cx,cy,28,['#ff6b35','#ffd23f','#ff4500'],4,12); }
+        else if(type==='smoke'){ emojiRise(cx,cy,['💨','☁️','💨','☁️']); burst(cx,cy,16,['#cfd6dd','#e4e9ee'],4,12); }
+        else if(type==='light'){ flash('#fffdf0'); burst(cx,cy,42,['#ffffff','#fff7cc','#eaf6ff','#ffe680'],4,15); }
+        else if(type==='rust'){ beaker.style.filter='sepia(1) saturate(3) hue-rotate(-10deg)'; setTimeout(()=>beaker.style.filter='',1600); burst(cx,cy,28,['#8a5a2b','#b5651d','#7a3f10','#a0522d'],4,12); }
+        else if(type==='glow'){ beaker.style.filter='drop-shadow(0 0 24px #7CFC00)'; setTimeout(()=>beaker.style.filter='',1800); flash('#d6ffd6'); burst(cx,cy,42,['#7CFC00','#adff2f','#00ff7f','#dfffd0'],4,15); }
+        else if(type==='magnet'){ emojiRise(cx,cy,['🧲','🧲']); burst(cx,cy,30,['#9db4c9','#c0d0e0','#7ec8e3','#5a7d99'],4,12); }
     }
-    function flash(){ const f=document.createElement('div'); f.className='flash'; stage.appendChild(f); setTimeout(()=>f.remove(),500); }
+    function bigEmoji(e){ const el=document.createElement('div'); el.className='big-emoji'; el.textContent=e; stage.appendChild(el);
+        el.animate([{transform:'translate(-50%,-50%) scale(.2)',opacity:0},{transform:'translate(-50%,-50%) scale(1.5)',opacity:1,offset:.3},{transform:'translate(-50%,-95%) scale(1.8)',opacity:0}],{duration:1700,easing:'ease-out'});
+        setTimeout(()=>el.remove(),1800); }
+    function flash(color){ const f=document.createElement('div'); f.className='flash'; if(color) f.style.background=color; stage.appendChild(f); setTimeout(()=>f.remove(),700); }
     function burst(cx,cy,n,colors,minR,maxR){ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='particle';
         const size=minR+Math.random()*(maxR-minR); p.style.width=p.style.height=size+'px'; p.style.background=colors[i%colors.length]; p.style.left=cx+'px'; p.style.top=cy+'px'; stage.appendChild(p);
-        const a=Math.random()*Math.PI*2, dist=60+Math.random()*120, dx=Math.cos(a)*dist, dy=Math.sin(a)*dist-40;
-        p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:700+Math.random()*400,easing:'cubic-bezier(.2,.7,.3,1)'}); setTimeout(()=>p.remove(),1100); } }
+        const a=Math.random()*Math.PI*2, dist=80+Math.random()*150, dx=Math.cos(a)*dist, dy=Math.sin(a)*dist-50;
+        p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:1100+Math.random()*600,easing:'cubic-bezier(.2,.7,.3,1)'}); setTimeout(()=>p.remove(),1800); } }
     function emojiRise(cx,cy,emojis){ emojis.forEach((e,i)=>{ const el=document.createElement('div'); el.className='emoji-burst'; el.textContent=e;
         el.style.left=(cx-20+(i-1)*30)+'px'; el.style.top=(cy-30)+'px'; stage.appendChild(el);
         el.animate([{transform:'translateY(0) scale(.6)',opacity:0},{transform:'translateY(-30px) scale(1.1)',opacity:1,offset:.3},{transform:'translateY(-130px) scale(1.2)',opacity:0}],{duration:1400,easing:'ease-out',delay:i*120}); setTimeout(()=>el.remove(),1600); }); }
