@@ -94,6 +94,12 @@
         .q-opt.wrong { background:#ffd0d0; border-color:#e07a7a; }
         .q-fact { margin-top:1rem; font-size:.95rem; color:#444; min-height:1.2rem; }
         .score-big { font-size:3.5rem; font-weight:800; color:var(--secondary-blue); }
+        /* Hover fact tooltip */
+        .tip { position:fixed; z-index:100; display:none; background:#fff; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,.22); padding:.7rem .9rem; max-width:235px; pointer-events:none; border-top:5px solid var(--secondary-blue); }
+        .tip .tip-sym { font-size:1.7rem; font-weight:800; color:var(--light-navy); line-height:1; }
+        .tip .tip-name { font-weight:700; margin-bottom:.35rem; }
+        .tip .tip-row { font-size:.78rem; color:#555; }
+        .tip .tip-fact { margin-top:.4rem; font-size:.82rem; color:#333; line-height:1.42; }
         @media (max-width:600px){ header h1 { font-size:3rem; } }
     </style>
 </head>
@@ -135,6 +141,7 @@
         </div>
     </div>
     <div class="overlay" id="overlay"><div class="quiz-card" id="quizCard"></div></div>
+    <div class="tip" id="tip"></div>
 
     <script>
     /* ===== CATEGORIES ===== */
@@ -161,6 +168,90 @@
     ];
     const EL = {};
     const ELS = ELEMENTS.map(e => { const o={n:e[0],sym:e[1],name:e[2],cat:e[3],col:e[4],row:e[5]}; EL[o.sym]=o; return o; });
+
+    /* ===== Hover "Did you know?" tooltip for EVERY element ===== */
+    const tip = document.getElementById('tip');
+    // Electrons per shell (simplified Bohr model), filled in aufbau order and grouped by shell.
+    function electronShells(z){
+        const order=[[1,2],[2,2],[2,6],[3,2],[3,6],[4,2],[3,10],[4,6],[5,2],[4,10],[5,6],[6,2],[4,14],[5,10],[6,6],[7,2],[5,14],[6,10],[7,6]];
+        let e=z; const sh={};
+        for(const [n,cap] of order){ if(e<=0) break; const add=Math.min(cap,e); sh[n]=(sh[n]||0)+add; e-=add; }
+        return Object.keys(sh).map(Number).sort((a,b)=>a-b).map(k=>sh[k]);
+    }
+    // Fun facts for well-known elements; others get an auto-generated intro.
+    const FACTS = {
+        H:'The lightest and most common element in the whole universe — stars are mostly hydrogen!',
+        He:'So light it makes balloons float; it is the second-most common element in the universe.',
+        Li:'The lightest metal — it powers the rechargeable battery in your phone and laptop.',
+        Be:'Light but incredibly stiff — used in spacecraft and high-end bike frames.',
+        B:'Boron makes glass heat-resistant (like Pyrex) and is used in strong lightweight materials.',
+        C:'The element of life — every living thing is built on carbon. Diamond and pencil "lead" are both pure carbon!',
+        N:'About 78% of the air you breathe is nitrogen gas.',
+        O:'You need it every breath — about 21% of the air. It also makes fire burn.',
+        F:'The most reactive element of all — it reacts with almost everything!',
+        Ne:'Glows bright orange-red inside "neon" signs.',
+        Na:'So reactive it explodes in water — but joined with chlorine it becomes harmless table salt.',
+        Mg:'Burns with a blinding white light — used in fireworks and emergency flares.',
+        Al:'The most common metal in Earth’s crust — light and rust-proof, used in cans and airplanes.',
+        Si:'The heart of every computer chip — "Silicon Valley" is named after it.',
+        P:'Glows in the dark, and it is essential in your DNA and bones.',
+        S:'Bright yellow and smells like rotten eggs; it is found around volcanoes.',
+        Cl:'A greenish poison gas that, in tiny amounts, keeps swimming pools clean and germ-free.',
+        Ar:'An inert gas used to fill light bulbs so the glowing filament lasts longer.',
+        K:'Even more explosive in water than sodium — and your muscles and nerves need it (bananas have it!).',
+        Ca:'Builds your bones and teeth — and it is the main ingredient in chalk and limestone.',
+        Ti:'As strong as steel but much lighter — used in jets, ships, and body implants.',
+        Cr:'Gives shiny "chrome" finishes and makes stainless steel shiny and rust-proof.',
+        Mn:'Helps make steel harder and stronger.',
+        Fe:'The most-used metal on Earth — it makes steel, and it is what makes your blood red!',
+        Co:'Gives a deep "cobalt blue" color to glass and paint.',
+        Ni:'Used in coins, stainless steel, and rechargeable batteries.',
+        Cu:'A superb conductor — the metal inside almost all electrical wires. It turns green over time (Statue of Liberty!).',
+        Zn:'Coats steel to stop it rusting, and your body needs a little to stay healthy.',
+        Ga:'A metal that melts in your hand — its melting point is just below body temperature!',
+        Ge:'A metalloid used in fiber-optic cables and infrared night-vision lenses.',
+        As:'Famous as a poison, but tiny amounts are useful in electronics (semiconductors).',
+        Br:'One of only two elements that is a liquid at room temperature — a smelly red-brown one.',
+        Kr:'A noble gas used in some super-bright lights and camera flashes.',
+        Ag:'The best electrical conductor of all metals — used in jewelry, mirrors, and electronics.',
+        Sn:'Tin coats "tin cans" (which are really steel) to stop them from rusting.',
+        I:'Your thyroid gland needs it — that is why it is added to salt. It makes purple vapor when heated!',
+        Xe:'A noble gas used in bright car headlights and even ion engines on spacecraft.',
+        W:'Tungsten has the highest melting point of any metal — it was the glowing wire in old light bulbs.',
+        Pt:'Platinum is even rarer than gold — used in jewelry and inside car exhaust cleaners.',
+        Au:'Gold never rusts or tarnishes, so it stays shiny forever — perfect for jewelry and electronics.',
+        Hg:'The only metal that is liquid at room temperature — the silvery stuff in old thermometers.',
+        Pb:'Lead is heavy and blocks radiation (X-ray aprons!), but it is toxic, so we stopped using it in paint and pipes.',
+        Rn:'A radioactive gas that can seep into basements — homes are tested for it.',
+        La:'Lanthanum is used in camera and telescope lenses and in hybrid-car batteries.',
+        Ce:'The most common rare-earth metal — it polishes glass and coats self-cleaning ovens.',
+        Nd:'Neodymium makes the strongest magnets in the world — in headphones, phones, and motors!',
+        Eu:'Europium glows red — it made the red on old TV screens and helps banknotes fight counterfeiters.',
+        Gd:'Gadolinium is used in MRI scans to make clearer pictures inside your body.',
+        U:'Uranium is radioactive and powers nuclear plants and submarines — one pellet equals a ton of coal.',
+        Pu:'Plutonium is human-made and so radioactive it feels warm; it has powered spacecraft like Voyager.',
+        Am:'Americium sits inside most smoke detectors — its tiny bit of radiation helps sense smoke!',
+        Th:'Thorium is a radioactive metal being studied as a possibly safer nuclear fuel.',
+    };
+    function elInfo(el){
+        const shells = electronShells(el.n).join(', ');
+        const fact = FACTS[el.sym] || `${el.name} (${el.sym}) is a ${CATS[el.cat].name.toLowerCase()} — element number ${el.n} on the periodic table.`;
+        return `<div class="tip-sym">${el.sym}</div><div class="tip-name">${el.name}</div>
+            <div class="tip-row">Atomic number: <b>${el.n}</b> &nbsp;•&nbsp; ${CATS[el.cat].name}</div>
+            <div class="tip-row">Electron shells: <b>${shells}</b></div>
+            <div class="tip-fact">💡 ${fact}</div>`;
+    }
+    function showTip(el, tileEl){
+        tip.innerHTML = elInfo(el);
+        tip.style.display = 'block';
+        const r = tileEl.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+        let left = r.left + r.width/2 - tr.width/2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
+        let top = r.top - tr.height - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px'; tip.style.top = top + 'px';
+    }
+    function hideTip(){ tip.style.display = 'none'; }
 
     /* ===== SPECIFIC REACTIONS (famous, with real products + rich facts) =====
        els: the two element symbols. */
@@ -194,6 +285,11 @@
         {els:['H','S'], name:'Rotten-Egg Gas', emoji:'💨', effect:'smoke', warn:true, product:'Hydrogen Sulfide, H₂S', fact:'That awful rotten-egg smell — it is also toxic in large amounts, so it is nothing to sniff at!'},
         {els:['N','O'], name:'Smog Maker', emoji:'💨', effect:'smoke', warn:false, product:'Nitrogen Dioxide, NO₂', fact:'A brown, smelly gas made in hot car engines and by lightning — it is a big part of city smog.'},
         {els:['Fe','S'], name:'Fool’s-Gold Cousin', emoji:'🔥', effect:'flame', warn:false, product:'Iron Sulfide, FeS', fact:'Iron and sulfur glow and react to make iron sulfide — related to "fool’s gold" (pyrite).'},
+        // --- Rare-earth & radioactive signature reactions ---
+        {els:['Nd','Fe'], name:'World’s Strongest Magnet', emoji:'🧲', effect:'magnet', warn:false, product:'Neodymium Magnet (Nd₂Fe₁₄B)', fact:'Neodymium joined with iron (and a little boron) makes the strongest permanent magnets on Earth — inside your headphones, phone speakers, and electric motors!'},
+        {els:['U','O'], name:'Nuclear Fuel', emoji:'☢️', effect:'glow', warn:true, product:'Uranium Dioxide, UO₂', fact:'Uranium oxide is the fuel inside nuclear power plants — one tiny pellet holds about as much energy as a whole ton of coal!'},
+        {els:['Eu','O'], name:'TV-Screen Red', emoji:'📺', effect:'light', warn:false, product:'Europium Oxide, Eu₂O₃', fact:'Europium glows bright red — it made the red pixels on old TVs, and it helps Euro banknotes glow under UV light to stop counterfeiters!'},
+        {els:['Ce','O'], name:'Glass Polisher', emoji:'✨', effect:'light', warn:false, product:'Cerium Oxide, CeO₂', fact:'Cerium oxide polishes glass perfectly smooth and coats the inside of self-cleaning ovens.'},
     ];
     const SPECIFIC = {};
     function combo(a,b){ return [a,b].sort().join('+'); }
@@ -260,6 +356,8 @@
         b.title = el.name + ' — ' + CATS[el.cat].name;
         b.innerHTML = `<span class="en">${el.n}</span><span class="es">${el.sym}</span>`;
         b.addEventListener('click', () => toggleEl(el.sym));
+        b.addEventListener('mouseenter', () => showTip(el, b));
+        b.addEventListener('mouseleave', hideTip);
         ptable.appendChild(b);
     });
     [[3,6,'57-71'],[3,7,'89-103']].forEach(([c,r,txt]) => {
@@ -342,6 +440,8 @@
         else if(type==='smoke'){ emojiRise(cx,cy,['💨','☁️','💨']); }
         else if(type==='light'){ flash(); burst(cx,cy,20,['#fff','#fff7cc','#eaf6ff'],2,7); }
         else if(type==='rust'){ beaker.style.filter='sepia(1) saturate(3) hue-rotate(-10deg)'; setTimeout(()=>beaker.style.filter='',1400); burst(cx,cy,14,['#8a5a2b','#b5651d','#7a3f10'],2,5); }
+        else if(type==='glow'){ beaker.style.filter='drop-shadow(0 0 14px #7CFC00)'; setTimeout(()=>beaker.style.filter='',1500); flash(); burst(cx,cy,24,['#7CFC00','#adff2f','#00ff7f','#dfffd0'],2,7); emojiRise(cx,cy,['☢️']); }
+        else if(type==='magnet'){ emojiRise(cx,cy,['🧲']); burst(cx,cy,18,['#9db4c9','#c0d0e0','#7ec8e3','#5a7d99'],2,6); }
     }
     function flash(){ const f=document.createElement('div'); f.className='flash'; stage.appendChild(f); setTimeout(()=>f.remove(),500); }
     function burst(cx,cy,n,colors,minR,maxR){ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='particle';
