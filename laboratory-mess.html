@@ -291,6 +291,30 @@
         {els:['U','O'], name:'Nuclear Fuel', emoji:'☢️', effect:'glow', warn:true, product:'Uranium Dioxide, UO₂', fact:'Uranium oxide is the fuel inside nuclear power plants — one tiny pellet holds about as much energy as a whole ton of coal!'},
         {els:['Eu','O'], name:'TV-Screen Red', emoji:'📺', effect:'light', warn:false, product:'Europium Oxide, Eu₂O₃', fact:'Europium glows bright red — it made the red pixels on old TVs, and it helps Euro banknotes glow under UV light to stop counterfeiters!'},
         {els:['Ce','O'], name:'Glass Polisher', emoji:'✨', effect:'light', warn:false, product:'Cerium Oxide, CeO₂', fact:'Cerium oxide polishes glass perfectly smooth and coats the inside of self-cleaning ovens.'},
+        // --- Rest of the lanthanides (rare-earth metals) ---
+        {els:['La','O'], name:'Camera-Lens Glass', emoji:'📷', effect:'light', warn:false, product:'Lanthanum Oxide, La₂O₃', fact:'Lanthanum oxide makes camera and telescope lenses extra clear and sharp.'},
+        {els:['Pr','O'], name:'Welder’s Goggles', emoji:'🥽', effect:'light', warn:false, product:'Praseodymium Oxide, Pr₂O₃', fact:'Praseodymium turns glass yellow-green — it is in welders’ and glassblowers’ goggles to protect their eyes from glare.'},
+        {els:['Nd','O'], name:'Purple Glass', emoji:'🟣', effect:'light', warn:false, product:'Neodymium Oxide, Nd₂O₃', fact:'Neodymium colors glass a beautiful purple and is used in lasers and tanning-lamp bulbs. (Mix it with iron for the world’s strongest magnet!)'},
+        {els:['Pm','O'], name:'Glow-in-the-Dark', emoji:'☢️', effect:'glow', warn:true, product:'Promethium Oxide, Pm₂O₃', fact:'Promethium is radioactive and was used in glow-in-the-dark watch dials and tiny nuclear batteries.'},
+        {els:['Sm','Co'], name:'Heat-Proof Magnet', emoji:'🧲', effect:'magnet', warn:false, product:'Samarium-Cobalt Magnet, SmCo₅', fact:'Samarium joined with cobalt makes strong magnets that keep working even when really hot — used in headphones and precision motors.'},
+        {els:['Gd','O'], name:'MRI Helper', emoji:'🧲', effect:'light', warn:false, product:'Gadolinium Oxide, Gd₂O₃', fact:'Gadolinium is injected during MRI scans to make clearer pictures inside your body, and it soaks up neutrons in nuclear reactors.'},
+        {els:['Tb','O'], name:'Green Screen Glow', emoji:'💚', effect:'light', warn:false, product:'Terbium Oxide, Tb₄O₇', fact:'Terbium glows green — it makes the green color in TV screens and fluorescent lights.'},
+        {els:['Dy','O'], name:'Hot-Magnet Booster', emoji:'🧲', effect:'magnet', warn:false, product:'Dysprosium Oxide, Dy₂O₃', fact:'Dysprosium is added to magnets so they don’t lose power when hot — vital for electric-car and wind-turbine motors.'},
+        {els:['Ho','O'], name:'Most Magnetic Element', emoji:'🧲', effect:'magnet', warn:false, product:'Holmium Oxide, Ho₂O₃', fact:'Holmium has the strongest magnetic pull of any element and is used in powerful medical lasers.'},
+        {els:['Er','O'], name:'Pink Glass & Internet', emoji:'💗', effect:'light', warn:false, product:'Erbium Oxide, Er₂O₃', fact:'Erbium colors glass and gemstones pink, and it boosts the signal in the fiber-optic cables that carry the internet!'},
+        {els:['Tm','O'], name:'Portable X-ray', emoji:'📸', effect:'light', warn:false, product:'Thulium Oxide, Tm₂O₃', fact:'Thulium is used inside portable X-ray machines and in some lasers.'},
+        {els:['Yb','O'], name:'Atomic Clock', emoji:'⏱️', effect:'light', warn:false, product:'Ytterbium Oxide, Yb₂O₃', fact:'Ytterbium powers the most accurate atomic clocks ever built — they lose less than a second in billions of years.'},
+        {els:['Lu','O'], name:'Brain Scanner', emoji:'🧠', effect:'light', warn:false, product:'Lutetium Oxide, Lu₂O₃', fact:'Lutetium is used inside PET scanners that take pictures of the brain, and to help refine petroleum.'},
+        // --- The actinides (radioactive!) ---
+        {els:['Ac','O'], name:'Cancer Fighter', emoji:'☢️', effect:'glow', warn:true, product:'Actinium Oxide, Ac₂O₃', fact:'Actinium glows pale blue from its own radioactivity and is being tested to destroy cancer cells.'},
+        {els:['Th','O'], name:'Safer Nuclear Fuel', emoji:'☢️', effect:'glow', warn:true, product:'Thorium Oxide, ThO₂', fact:'Thorium dioxide has one of the highest melting points of anything, and thorium is being studied as a cleaner, safer nuclear fuel.'},
+        {els:['Pa','O'], name:'Super-Rare Element', emoji:'☢️', effect:'glow', warn:true, product:'Protactinium Oxide, Pa₂O₅', fact:'Protactinium is one of the rarest and most expensive natural elements — mostly used only for scientific research.'},
+        {els:['Np','O'], name:'Neutron Detector', emoji:'☢️', effect:'glow', warn:true, product:'Neptunium Oxide, NpO₂', fact:'Neptunium was the first element ever made that is heavier than uranium; it is used in some neutron detectors.'},
+        {els:['Pu','O'], name:'Space Battery', emoji:'🛰️', effect:'glow', warn:true, product:'Plutonium Oxide, PuO₂', fact:'Plutonium is so radioactive it feels warm — it powers spacecraft batteries like the Voyager probes and Mars rovers!'},
+        {els:['Am','O'], name:'Smoke Detector', emoji:'🚨', effect:'glow', warn:true, product:'Americium Oxide, AmO₂', fact:'This is the americium inside your smoke detector — its tiny bit of radiation is what senses the smoke and saves lives!'},
+        {els:['Cm','O'], name:'Purple Glow', emoji:'☢️', effect:'glow', warn:true, product:'Curium Oxide, Cm₂O₃', fact:'Curium glows purple in the dark from its own radioactivity and powered instruments on the Mars rovers.'},
+        {els:['Bk','O'], name:'Element Maker', emoji:'☢️', effect:'glow', warn:true, product:'Berkelium Oxide, BkO₂', fact:'Berkelium is human-made and was used as a target to create the superheavy element Tennessine (117).'},
+        {els:['Cf','O'], name:'Gold Finder', emoji:'☢️', effect:'glow', warn:true, product:'Californium Oxide, Cf₂O₃', fact:'Californium is a powerful neutron source used to find gold and oil underground and to start up nuclear reactors.'},
     ];
     const SPECIFIC = {};
     function combo(a,b){ return [a,b].sort().join('+'); }
@@ -322,7 +346,15 @@
                 return { name:'Metal Oxide', emoji:'☀️', effect:'light', warn:false, product:`${m.name} oxide, ${m.sym}O`, fact:`${m.name} burns brightly in oxygen to form ${m.name} oxide.` };
             if (m.cat === 'transition' || m.cat === 'postt')
                 return { name:'Rust / Oxide', emoji:'🟤', effect:'rust', warn:false, product:`${m.name} oxide`, fact:`${m.name} reacts with oxygen to form ${m.name} oxide — a kind of rust or tarnish.` };
+            if (m.cat === 'lanth')
+                return { name:'Rare-Earth Oxide', emoji:'✨', effect:'light', warn:false, product:`${m.name} oxide`, fact:`${m.name} is a "rare earth" metal. With oxygen it forms ${m.name} oxide — rare earths are prized for magnets, screens, lasers, and batteries.` };
+            if (m.cat === 'actin')
+                return { name:'Radioactive Oxide', emoji:'☢️', effect:'glow', warn:true, product:`${m.name} oxide`, fact:`${m.name} is a radioactive actinide. With oxygen it forms ${m.name} oxide — most actinides are human-made and used in nuclear science or research.` };
         }
+        // rare-earth / actinide + halogen -> halide
+        const RE = els.find(e => e.cat === 'lanth' || e.cat === 'actin');
+        if (RE && X && RE !== X)
+            return { name: RE.cat === 'actin' ? 'Radioactive Halide' : 'Rare-Earth Halide', emoji: RE.cat === 'actin' ? '☢️' : '✨', effect: RE.cat === 'actin' ? 'glow' : 'light', warn: RE.cat === 'actin', product:`${RE.name} ${HALIDE[X.sym]}`, fact:`${RE.name} bonds with ${X.name.toLowerCase()} to form ${RE.name} ${HALIDE[X.sym]}, a salt.` };
         // hydrogen + halogen -> acid gas
         if (H && X && H !== X)
             return { name:'Acid Gas', emoji:'💨', effect:'smoke', warn:false, product:`Hydrogen ${HALIDE[X.sym]}, H${X.sym}`, fact:`Hydrogen joins with ${X.name.toLowerCase()} to form hydrogen ${HALIDE[X.sym]}, an acidic gas.` };
@@ -346,6 +378,8 @@
         {need:[{sym:'C'},{sym:'O'}], emoji:'🔥', name:'Carbon Dioxide'},
         {need:[{sym:'H'},{cat:'halogen'}], emoji:'💨', name:'an acid gas'},
         {need:[{sym:'H'},{sym:'N'}], emoji:'💨', name:'Ammonia'},
+        {need:[{cat:'lanth'},{sym:'O'}], emoji:'✨', name:'a rare-earth oxide (cool uses!)'},
+        {need:[{cat:'actin'},{sym:'O'}], emoji:'☢️', name:'a radioactive oxide'},
     ];
 
     /* ===== Build periodic table ===== */
