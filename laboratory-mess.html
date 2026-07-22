@@ -41,7 +41,7 @@
         .el:hover { transform:scale(1.12); box-shadow:0 3px 8px rgba(0,0,0,.25); z-index:2; }
         .el .en { font-size:.55rem; opacity:.7; } .el .es { font-size:.95rem; font-weight:800; }
         .el.selected { outline:3px solid var(--light-navy); transform:scale(1.12); z-index:3; }
-        .el.placeholder { cursor:default; background:#eef1f4!important; color:#aaa; box-shadow:none; }
+        .el.placeholder { cursor:help; background:#eef1f4!important; color:#aaa; box-shadow:none; }
         .el.placeholder:hover { transform:none; box-shadow:none; }
         .legend { display:flex; flex-wrap:wrap; gap:.5rem 1rem; justify-content:center; margin-top:1rem; font-size:.8rem; }
         .legend span { display:flex; align-items:center; gap:.35rem; }
@@ -252,8 +252,7 @@
             <div class="tip-row">Electron shells: <b>${shells}</b></div>
             <div class="tip-fact">💡 ${fact}</div>`;
     }
-    function showTip(el, tileEl){
-        tip.innerHTML = elInfo(el);
+    function placeTip(tileEl){
         tip.style.display = 'block';
         const r = tileEl.getBoundingClientRect(), tr = tip.getBoundingClientRect();
         let left = r.left + r.width/2 - tr.width/2;
@@ -262,6 +261,12 @@
         if (top < 8) top = r.bottom + 10;
         tip.style.left = left + 'px'; tip.style.top = top + 'px';
     }
+    function showTip(el, tileEl){ tip.innerHTML = elInfo(el); placeTip(tileEl); }
+    // hover text for the two "57-71" / "89-103" signpost boxes
+    const PLACEHOLDER_INFO = {
+        '57-71': `<div class="tip-sym" style="font-size:1.2rem">Lanthanides</div><div class="tip-name">Elements 57–71</div><div class="tip-fact">💡 These 15 elements (Lanthanum → Lutetium) actually belong right here in the table. To stop the table from getting super wide, they're pulled out and shown in the first pink row at the bottom.</div>`,
+        '89-103': `<div class="tip-sym" style="font-size:1.2rem">Actinides</div><div class="tip-name">Elements 89–103</div><div class="tip-fact">💡 These 15 elements (Actinium → Lawrencium) belong right here too. They're pulled out and shown in the second pink row at the bottom so the whole table stays readable.</div>`
+    };
     function hideTip(){ tip.style.display = 'none'; }
 
     /* ===== SPECIFIC REACTIONS (famous, with real products + rich facts) =====
@@ -429,6 +434,8 @@
     [[3,6,'57-71'],[3,7,'89-103']].forEach(([c,r,txt]) => {
         const d = document.createElement('div'); d.className='el placeholder';
         d.style.gridColumn=c; d.style.gridRow=r; d.innerHTML=`<span class="es" style="font-size:.62rem">${txt}</span>`;
+        d.addEventListener('mouseenter', ()=>{ tip.innerHTML = PLACEHOLDER_INFO[txt]; placeTip(d); });
+        d.addEventListener('mouseleave', hideTip);
         ptable.appendChild(d);
     });
 
