@@ -7,73 +7,58 @@
     <style>
         /* ==========================================================
            LABORATORY MESS - a periodic-table chemistry game.
-           Self-contained (its own styles + script).
+           Pick 2 specific elements; each exact pair makes a specific,
+           real product with its own fact. The guide shows the general
+           category patterns as hints.
            ========================================================== */
-        @font-face {
-            font-family: 'Sweet Hipster';
-            src: url('fonts/Sweet-Hipster.ttf') format('truetype');
-            font-display: swap;
-        }
+        @font-face { font-family:'Sweet Hipster'; src:url('fonts/Sweet-Hipster.ttf') format('truetype'); font-display:swap; }
         :root {
-            --baby-blue: #cde8f7; --primary-blue: #a8d8ea; --secondary-blue: #7ec8e3;
-            --light-navy: #2d5a85; --dark-text: #1a2332; --light-gray: #f5f7fa; --white: #fff;
-            /* category colors */
+            --baby-blue:#cde8f7; --primary-blue:#a8d8ea; --secondary-blue:#7ec8e3;
+            --light-navy:#2d5a85; --dark-text:#1a2332; --light-gray:#f5f7fa; --white:#fff;
             --c-alkali:#ff9aa2; --c-alkaline:#ffc48c; --c-transition:#ffe08a; --c-postt:#b9e4a8;
             --c-metalloid:#8fe0c8; --c-nonmetal:#a6d9f0; --c-halogen:#7fb3f0; --c-noble:#c3aef0;
             --c-lanth:#f4a6d3; --c-actin:#f0a0bc;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:var(--dark-text);
-            background:linear-gradient(160deg,#eaf6fd 0%,#f5f7fa 100%); min-height:100vh; line-height:1.6;
-        }
+        body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; color:var(--dark-text); background:linear-gradient(160deg,#eaf6fd 0%,#f5f7fa 100%); min-height:100vh; line-height:1.6; }
         .topbar { background:var(--baby-blue); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(126,200,227,.15); }
         .topbar a { color:var(--dark-text); text-decoration:none; font-weight:700; }
         .topbar a:hover { opacity:.7; }
         header { text-align:center; padding:1.8rem 1rem 0.4rem; }
         header h1 { font-family:'Sweet Hipster',cursive; font-size:4rem; color:var(--light-navy); line-height:1.1; }
-        header p { color:#555; max-width:640px; margin:0.3rem auto 0; }
-
+        header p { color:#555; max-width:660px; margin:0.3rem auto 0; }
         .progress-wrap { max-width:520px; margin:1rem auto 0; text-align:center; }
         .progress-label { font-weight:700; color:var(--light-navy); margin-bottom:.4rem; }
         .progress-dots { display:flex; justify-content:center; gap:.6rem; }
         .dot { width:32px; height:32px; border-radius:50%; background:#fff; border:3px solid var(--primary-blue); display:flex; align-items:center; justify-content:center; transition:all .3s; }
         .dot.filled { background:var(--secondary-blue); border-color:var(--secondary-blue); transform:scale(1.1); color:#fff; }
-
         .wrap { max-width:1150px; margin:1.2rem auto; padding:0 1rem 3rem; }
         .panel { background:#fff; border-radius:18px; padding:1.3rem; box-shadow:0 6px 25px rgba(0,0,0,.06); margin-bottom:1.3rem; }
         .panel h2 { color:var(--light-navy); font-size:1.2rem; margin-bottom:.8rem; text-align:center; }
-
-        /* Periodic table */
         .ptable-scroll { overflow-x:auto; padding-bottom:.5rem; }
-        .ptable { display:grid; grid-template-columns:repeat(18, minmax(40px,1fr)); grid-auto-rows:44px; gap:3px; min-width:770px; }
-        .el { border:none; cursor:pointer; border-radius:6px; padding:2px; font-family:inherit; color:#1a2332; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; transition:transform .1s, box-shadow .1s; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+        .ptable { display:grid; grid-template-columns:repeat(18,minmax(40px,1fr)); grid-auto-rows:44px; gap:3px; min-width:770px; }
+        .el { border:none; cursor:pointer; border-radius:6px; padding:2px; font-family:inherit; color:#1a2332; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; transition:transform .1s,box-shadow .1s; box-shadow:0 1px 3px rgba(0,0,0,.12); }
         .el:hover { transform:scale(1.12); box-shadow:0 3px 8px rgba(0,0,0,.25); z-index:2; }
-        .el .en { font-size:.55rem; opacity:.7; }
-        .el .es { font-size:.95rem; font-weight:800; }
+        .el .en { font-size:.55rem; opacity:.7; } .el .es { font-size:.95rem; font-weight:800; }
         .el.selected { outline:3px solid var(--light-navy); transform:scale(1.12); z-index:3; }
         .el.placeholder { cursor:default; background:#eef1f4!important; color:#aaa; box-shadow:none; }
         .el.placeholder:hover { transform:none; box-shadow:none; }
-
         .legend { display:flex; flex-wrap:wrap; gap:.5rem 1rem; justify-content:center; margin-top:1rem; font-size:.8rem; }
         .legend span { display:flex; align-items:center; gap:.35rem; }
         .swatch { width:14px; height:14px; border-radius:4px; display:inline-block; }
-
-        /* Bottom two columns */
         .cols { display:grid; grid-template-columns:1fr 1fr; gap:1.3rem; }
         @media (max-width:800px){ .cols { grid-template-columns:1fr; } }
-
         .mix-area { text-align:center; }
         .selected-chips { min-height:40px; display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-bottom:.6rem; }
         .chip { background:var(--baby-blue); padding:.35rem .8rem; border-radius:20px; font-weight:800; font-size:1rem; display:flex; align-items:center; gap:.4rem; }
         .chip button { background:none; border:none; cursor:pointer; font-weight:800; color:#c0392b; font-size:1rem; }
         .hint { color:#888; font-size:.9rem; }
         #stage { position:relative; height:180px; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
-        .beaker { font-size:5rem; line-height:1; position:relative; z-index:2; transition:transform .2s, filter .3s; }
+        .beaker { font-size:5rem; line-height:1; position:relative; z-index:2; transition:transform .2s,filter .3s; }
         .beaker.shake { animation:shake .5s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px) rotate(-4deg)} 40%{transform:translateX(12px) rotate(4deg)} 60%{transform:translateX(-8px)} 80%{transform:translateX(8px)} }
         .controls { margin-top:.6rem; display:flex; gap:.7rem; justify-content:center; }
-        .btn { border:none; cursor:pointer; font-family:inherit; font-weight:700; padding:.7rem 1.7rem; border-radius:30px; font-size:1rem; transition:transform .15s, opacity .15s; }
+        .btn { border:none; cursor:pointer; font-family:inherit; font-weight:700; padding:.7rem 1.7rem; border-radius:30px; font-size:1rem; transition:transform .15s,opacity .15s; }
         .btn:hover { transform:translateY(-2px); }
         .btn-mix { background:linear-gradient(135deg,var(--secondary-blue),var(--primary-blue)); color:#fff; box-shadow:0 4px 15px rgba(126,200,227,.5); }
         .btn-clear { background:#f0f0f3; color:#555; }
@@ -85,20 +70,16 @@
         .result .r-product { font-weight:700; } .result .r-fact { margin-top:.4rem; color:#444; }
         .result .r-warn { margin-top:.5rem; color:#b5651d; font-weight:700; font-size:.9rem; }
         .result.norxn { border-left-color:#bbb; }
-
-        /* Reaction guide */
+        .guide .g-intro { font-size:.85rem; color:#777; text-align:center; margin-bottom:.5rem; }
         .guide ul { list-style:none; }
         .guide li { padding:.5rem 0; border-bottom:1px dashed #e2e6ea; font-size:.95rem; display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; }
         .guide li:last-child { border-bottom:none; }
         .tag { padding:.12rem .5rem; border-radius:12px; font-weight:700; font-size:.82rem; white-space:nowrap; }
         .arrow { color:#999; font-weight:700; }
-
-        /* effects */
         .particle { position:absolute; border-radius:50%; pointer-events:none; z-index:3; }
         .flash { position:absolute; inset:0; background:#fff; z-index:4; pointer-events:none; animation:flash .5s ease-out forwards; }
         @keyframes flash { from{opacity:.9} to{opacity:0} }
         .emoji-burst { position:absolute; z-index:3; font-size:2rem; pointer-events:none; }
-
         .overlay { position:fixed; inset:0; background:rgba(26,35,50,.6); display:none; align-items:center; justify-content:center; z-index:50; padding:1rem; }
         .overlay.show { display:flex; }
         .quiz-card { background:#fff; border-radius:20px; padding:2rem; max-width:560px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; }
@@ -123,27 +104,22 @@
     </div>
     <header>
         <h1>Laboratory Mess</h1>
-        <p>Click elements from the periodic table (pick 2 or 3), then hit Mix! Use the Reaction Guide below so you always know what makes a reaction. Discover 5 reactions to unlock the quiz!</p>
+        <p>Pick 2 elements from the periodic table and hit Mix! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
     </header>
-
     <div class="progress-wrap">
         <div class="progress-label">Reactions discovered: <span id="count">0</span> / 5</div>
         <div class="progress-dots" id="dots"></div>
     </div>
-
     <div class="wrap">
-        <!-- Periodic table -->
         <div class="panel">
             <h2>The Periodic Table</h2>
             <div class="ptable-scroll"><div class="ptable" id="ptable"></div></div>
             <div class="legend" id="legend"></div>
         </div>
-
         <div class="cols">
-            <!-- Beaker -->
             <div class="panel mix-area">
                 <h2>Your Beaker</h2>
-                <div class="selected-chips" id="chips"><span class="hint">Click 2 or 3 elements above</span></div>
+                <div class="selected-chips" id="chips"><span class="hint">Click 2 elements above</span></div>
                 <div id="stage"><div class="beaker" id="beaker">&#129514;</div></div>
                 <div class="controls">
                     <button class="btn btn-mix" id="mixBtn" disabled>Mix!</button>
@@ -151,38 +127,25 @@
                 </div>
                 <div class="result" id="result"></div>
             </div>
-
-            <!-- Reaction guide -->
             <div class="panel guide">
                 <h2>Reaction Guide</h2>
+                <div class="g-intro">General patterns — but each exact pair makes its own specific product!</div>
                 <ul id="guideList"></ul>
             </div>
         </div>
     </div>
-
     <div class="overlay" id="overlay"><div class="quiz-card" id="quizCard"></div></div>
 
     <script>
-    /* ==============================================================
-       CATEGORIES (color + display name)
-       ============================================================== */
+    /* ===== CATEGORIES ===== */
     const CATS = {
-        alkali:     { name:'Alkali metal',            color:'var(--c-alkali)' },
-        alkaline:   { name:'Alkaline earth metal',    color:'var(--c-alkaline)' },
-        transition: { name:'Transition metal',        color:'var(--c-transition)' },
-        postt:      { name:'Post-transition metal',   color:'var(--c-postt)' },
-        metalloid:  { name:'Metalloid',               color:'var(--c-metalloid)' },
-        nonmetal:   { name:'Nonmetal',                color:'var(--c-nonmetal)' },
-        halogen:    { name:'Halogen',                 color:'var(--c-halogen)' },
-        noble:      { name:'Noble gas',               color:'var(--c-noble)' },
-        lanth:      { name:'Lanthanide',              color:'var(--c-lanth)' },
-        actin:      { name:'Actinide',                color:'var(--c-actin)' },
+        alkali:{name:'Alkali metal',color:'var(--c-alkali)'}, alkaline:{name:'Alkaline earth metal',color:'var(--c-alkaline)'},
+        transition:{name:'Transition metal',color:'var(--c-transition)'}, postt:{name:'Post-transition metal',color:'var(--c-postt)'},
+        metalloid:{name:'Metalloid',color:'var(--c-metalloid)'}, nonmetal:{name:'Nonmetal',color:'var(--c-nonmetal)'},
+        halogen:{name:'Halogen',color:'var(--c-halogen)'}, noble:{name:'Noble gas',color:'var(--c-noble)'},
+        lanth:{name:'Lanthanide',color:'var(--c-lanth)'}, actin:{name:'Actinide',color:'var(--c-actin)'},
     };
-
-    /* ==============================================================
-       ALL 118 ELEMENTS: [atomicNumber, symbol, name, category, col, row]
-       col = group (1-18), row = period. Lanthanides/actinides on rows 9/10.
-       ============================================================== */
+    /* ===== 118 ELEMENTS: [n, symbol, name, category, col, row] ===== */
     const ELEMENTS = [
     [1,'H','Hydrogen','nonmetal',1,1],[2,'He','Helium','noble',18,1],
     [3,'Li','Lithium','alkali',1,2],[4,'Be','Beryllium','alkaline',2,2],[5,'B','Boron','metalloid',13,2],[6,'C','Carbon','nonmetal',14,2],[7,'N','Nitrogen','nonmetal',15,2],[8,'O','Oxygen','nonmetal',16,2],[9,'F','Fluorine','halogen',17,2],[10,'Ne','Neon','noble',18,2],
@@ -196,272 +159,236 @@
     [89,'Ac','Actinium','actin',3,10],[90,'Th','Thorium','actin',4,10],[91,'Pa','Protactinium','actin',5,10],[92,'U','Uranium','actin',6,10],[93,'Np','Neptunium','actin',7,10],[94,'Pu','Plutonium','actin',8,10],[95,'Am','Americium','actin',9,10],[96,'Cm','Curium','actin',10,10],[97,'Bk','Berkelium','actin',11,10],[98,'Cf','Californium','actin',12,10],[99,'Es','Einsteinium','actin',13,10],[100,'Fm','Fermium','actin',14,10],[101,'Md','Mendelevium','actin',15,10],[102,'No','Nobelium','actin',16,10],[103,'Lr','Lawrencium','actin',17,10],
     [104,'Rf','Rutherfordium','transition',4,7],[105,'Db','Dubnium','transition',5,7],[106,'Sg','Seaborgium','transition',6,7],[107,'Bh','Bohrium','transition',7,7],[108,'Hs','Hassium','transition',8,7],[109,'Mt','Meitnerium','transition',9,7],[110,'Ds','Darmstadtium','transition',10,7],[111,'Rg','Roentgenium','transition',11,7],[112,'Cn','Copernicium','transition',12,7],[113,'Nh','Nihonium','postt',13,7],[114,'Fl','Flerovium','postt',14,7],[115,'Mc','Moscovium','postt',15,7],[116,'Lv','Livermorium','postt',16,7],[117,'Ts','Tennessine','halogen',17,7],[118,'Og','Oganesson','noble',18,7]
     ];
-    const EL = {}; // symbol -> element object
+    const EL = {};
     const ELS = ELEMENTS.map(e => { const o={n:e[0],sym:e[1],name:e[2],cat:e[3],col:e[4],row:e[5]}; EL[o.sym]=o; return o; });
 
-    /* ==============================================================
-       REACTION RULES (category- or element-based). Each "need" is a
-       list of matchers: {cat:'...'} matches any element of that
-       category, {sym:'...'} matches that exact element.
-       ============================================================== */
-    const RULES = [
-        { need:[{cat:'alkali'},{cat:'halogen'}], name:'Explosive Salt Formation', emoji:'💥', effect:'explosion',
-          product:'a salt (like NaCl)', combo:'Alkali metal + Halogen', warn:true,
-          fact:'Super-reactive alkali metals (like sodium) react violently with halogens (like chlorine) — forming ordinary table salt with a burst of energy!' },
-        { need:[{cat:'alkaline'},{cat:'halogen'}], name:'Salt Formation', emoji:'⚡', effect:'light',
-          product:'a salt (like MgCl₂)', combo:'Alkaline earth metal + Halogen', warn:false,
-          fact:'Alkaline earth metals also grab onto halogens to make salts — a bit calmer than the alkali metals, but still energetic.' },
-        { need:[{sym:'H'},{sym:'O'}], name:'Water Explosion', emoji:'💥', effect:'explosion',
-          product:'Water (H₂O)', combo:'Hydrogen + Oxygen', warn:true,
-          fact:'Hydrogen and oxygen ignite explosively to form water — this is exactly what powered the Space Shuttle’s main engines!' },
-        { need:[{cat:'alkaline'},{sym:'O'}], name:'Blinding White Light', emoji:'☀️', effect:'light',
-          product:'a metal oxide (like MgO)', combo:'Alkaline earth metal + Oxygen', warn:true,
-          fact:'Burning an alkaline earth metal like magnesium gives off blindingly bright white light — used in fireworks and flares!' },
-        { need:[{cat:'alkali'},{sym:'O'}], name:'Burning Metal', emoji:'🔥', effect:'flame',
-          product:'a metal oxide', combo:'Alkali metal + Oxygen', warn:false,
-          fact:'Alkali metals are so reactive they catch fire in oxygen, forming metal oxides.' },
-        { need:[{sym:'C'},{sym:'O'}], name:'Combustion', emoji:'🔥', effect:'flame',
-          product:'Carbon Dioxide (CO₂)', combo:'Carbon + Oxygen', warn:false,
-          fact:'Carbon burns in oxygen to release energy and carbon dioxide — like a campfire or a charcoal grill.' },
-        { need:[{sym:'H'},{cat:'halogen'}], name:'Acid Gas', emoji:'💨', effect:'smoke',
-          product:'a hydrogen halide (like HCl)', combo:'Hydrogen + Halogen', warn:false,
-          fact:'Hydrogen joins with a halogen to form an acidic gas — hydrogen + chlorine makes hydrogen chloride (HCl).' },
-        { need:[{cat:'transition'},{sym:'O'}], name:'Rust / Oxide', emoji:'🟤', effect:'rust',
-          product:'a metal oxide (rust)', combo:'Transition metal + Oxygen', warn:false,
-          fact:'Transition metals like iron react slowly with oxygen to form oxides — iron’s oxide is the rust you see on old bikes!' },
-        { need:[{sym:'H'},{sym:'N'}], name:'Making Ammonia', emoji:'💨', effect:'smoke',
-          product:'Ammonia (NH₃)', combo:'Hydrogen + Nitrogen', warn:false,
-          fact:'Under high pressure, hydrogen and nitrogen combine into ammonia — the Haber process that makes fertilizer to feed the world.' },
+    /* ===== SPECIFIC REACTIONS (famous, with real products + rich facts) =====
+       els: the two element symbols. */
+    const HALIDE = { F:'fluoride', Cl:'chloride', Br:'bromide', I:'iodide', At:'astatide', Ts:'tennesside' };
+    const SPECIFIC_LIST = [
+        // --- Alkali metal + halogen (salts) ---
+        {els:['Na','Cl'], name:'Table Salt!', emoji:'💥', effect:'explosion', warn:true, product:'Sodium Chloride, NaCl', fact:'The salt on your fries! Explosive sodium metal + poisonous chlorine gas combine into totally harmless table salt.'},
+        {els:['Na','F'], name:'Toothpaste Fluoride', emoji:'💥', effect:'explosion', warn:true, product:'Sodium Fluoride, NaF', fact:'This is the fluoride added to toothpaste and drinking water to make your teeth stronger and fight cavities.'},
+        {els:['K','Cl'], name:'Salt Substitute', emoji:'💥', effect:'explosion', warn:true, product:'Potassium Chloride, KCl', fact:'Used as a "salt substitute" for people cutting down on sodium, and as a fertilizer for plants.'},
+        {els:['Li','Cl'], name:'Moisture Grabber', emoji:'💥', effect:'explosion', warn:true, product:'Lithium Chloride, LiCl', fact:'It absorbs water so well it is used to dry the air, and it burns with a bright red flame.'},
+        {els:['K','I'], name:'Iodized Salt', emoji:'⚡', effect:'light', warn:false, product:'Potassium Iodide, KI', fact:'This is added to table salt to make "iodized salt," which protects your thyroid gland from disease.'},
+        {els:['Na','I'], name:'Radiation Detector', emoji:'⚡', effect:'light', warn:false, product:'Sodium Iodide, NaI', fact:'Crystals of this glow when radiation hits them, so it is used inside radiation detectors.'},
+        {els:['Na','Br'], name:'Old-Time Sedative', emoji:'⚡', effect:'light', warn:false, product:'Sodium Bromide, NaBr', fact:'Over 100 years ago this was used as a calming medicine to help people sleep.'},
+        // --- Alkaline earth + halogen ---
+        {els:['Ca','Cl'], name:'Ice Melter', emoji:'⚡', effect:'light', warn:false, product:'Calcium Chloride, CaCl₂', fact:'Melts ice on winter roads and keeps things dry — it is inside those little "do not eat" packets!'},
+        {els:['Mg','Cl'], name:'Tofu Maker', emoji:'⚡', effect:'light', warn:false, product:'Magnesium Chloride, MgCl₂', fact:'Found in seawater, and it is used to turn soy milk into firm tofu!'},
+        {els:['Ca','F'], name:'Glowing Fluorite', emoji:'⚡', effect:'light', warn:false, product:'Calcium Fluoride, CaF₂', fact:'The mineral fluorite — it glows under UV light and is used to make special camera and telescope lenses.'},
+        // --- Metal + oxygen ---
+        {els:['Mg','O'], name:'Blinding White Light', emoji:'☀️', effect:'light', warn:true, product:'Magnesium Oxide, MgO', fact:'Burning magnesium gives off blindingly bright white light — used in fireworks, flares, and old camera flashes!'},
+        {els:['Fe','O'], name:'Rust', emoji:'🟤', effect:'rust', warn:false, product:'Iron Oxide, Fe₂O₃', fact:'The reddish-brown rust that slowly eats away old bikes, nails, and cars when iron meets oxygen.'},
+        {els:['Cu','O'], name:'Statue-of-Liberty Green', emoji:'🟤', effect:'rust', warn:false, product:'Copper Oxide, CuO', fact:'Copper turns black when heated and slowly green outdoors — that is why the Statue of Liberty is green!'},
+        {els:['Al','O'], name:'Rubies & Sapphires', emoji:'☀️', effect:'light', warn:false, product:'Aluminum Oxide, Al₂O₃', fact:'Forms a tough invisible shield that protects aluminum from rusting — and it is the same stuff rubies and sapphires are made of!'},
+        {els:['Ca','O'], name:'Quicklime (Limelight)', emoji:'☀️', effect:'light', warn:false, product:'Calcium Oxide, CaO', fact:'Called "quicklime" — used to make cement, and it glows so bright when heated that old theaters used it as "limelight."'},
+        {els:['S','O'], name:'Struck-Match Smell', emoji:'💨', effect:'smoke', warn:false, product:'Sulfur Dioxide, SO₂', fact:'The sharp smell of a just-struck match. Too much of it in the air causes acid rain.'},
+        // --- Nonmetal combos / gases ---
+        {els:['H','O'], name:'Water Explosion', emoji:'💥', effect:'explosion', warn:true, product:'Water, H₂O', fact:'Hydrogen and oxygen ignite explosively to form water — this is exactly what powered the Space Shuttle’s main engines!'},
+        {els:['C','O'], name:'Combustion', emoji:'🔥', effect:'flame', warn:false, product:'Carbon Dioxide, CO₂', fact:'Carbon burning in oxygen — like a campfire, a charcoal grill, or the CO₂ you breathe out.'},
+        {els:['H','N'], name:'Making Fertilizer', emoji:'💨', effect:'smoke', warn:false, product:'Ammonia, NH₃', fact:'Hydrogen + nitrogen make ammonia — the Haber process that makes fertilizer to grow food for the whole world.'},
+        {els:['H','Cl'], name:'Stomach Acid', emoji:'💨', effect:'smoke', warn:false, product:'Hydrogen Chloride, HCl', fact:'Dissolves in water to make hydrochloric acid — the very same acid your stomach uses to digest food!'},
+        {els:['H','F'], name:'Glass Etcher', emoji:'💨', effect:'smoke', warn:true, product:'Hydrogen Fluoride, HF', fact:'So corrosive it can dissolve glass, so chemists have to store it in plastic bottles!'},
+        {els:['H','S'], name:'Rotten-Egg Gas', emoji:'💨', effect:'smoke', warn:true, product:'Hydrogen Sulfide, H₂S', fact:'That awful rotten-egg smell — it is also toxic in large amounts, so it is nothing to sniff at!'},
+        {els:['N','O'], name:'Smog Maker', emoji:'💨', effect:'smoke', warn:false, product:'Nitrogen Dioxide, NO₂', fact:'A brown, smelly gas made in hot car engines and by lightning — it is a big part of city smog.'},
+        {els:['Fe','S'], name:'Fool’s-Gold Cousin', emoji:'🔥', effect:'flame', warn:false, product:'Iron Sulfide, FeS', fact:'Iron and sulfur glow and react to make iron sulfide — related to "fool’s gold" (pyrite).'},
+    ];
+    const SPECIFIC = {};
+    function combo(a,b){ return [a,b].sort().join('+'); }
+    SPECIFIC_LIST.forEach(r => { SPECIFIC[combo(r.els[0], r.els[1])] = r; });
+
+    /* ===== GENERIC FALLBACK for category pairs not specifically listed =====
+       So uncommon pairs (e.g. Rb + Br) still react, following the guide. */
+    function genericReaction(a, b) {
+        const els = [a, b];
+        const findCat = c => els.find(e => e.cat === c);
+        const findSym = s => els.find(e => e.sym === s);
+        const M1 = findCat('alkali'), M2 = findCat('alkaline'), X = findCat('halogen'), O = findSym('O'), H = findSym('H');
+        // alkali + halogen -> MX salt
+        if (M1 && X && M1 !== X)
+            return { name:'Salt Formation', emoji:'💥', effect:'explosion', warn:true,
+                product:`${M1.name} ${HALIDE[X.sym]}, ${M1.sym}${X.sym}`,
+                fact:`${M1.name} is a reactive alkali metal, so it combines with the halogen ${X.name.toLowerCase()} to form ${M1.name} ${HALIDE[X.sym]} — a salt!` };
+        // alkaline earth + halogen -> MX2 salt
+        if (M2 && X && M2 !== X)
+            return { name:'Salt Formation', emoji:'⚡', effect:'light', warn:false,
+                product:`${M2.name} ${HALIDE[X.sym]}, ${M2.sym}${X.sym}₂`,
+                fact:`${M2.name}, an alkaline earth metal, bonds with ${X.name.toLowerCase()} to make ${M2.name} ${HALIDE[X.sym]}, a salt.` };
+        // metal + oxygen -> oxide
+        if (O) {
+            const m = els.find(e => e !== O);
+            if (m.cat === 'alkali')
+                return { name:'Burning Metal', emoji:'🔥', effect:'flame', warn:false, product:`${m.name} oxide, ${m.sym}₂O`, fact:`${m.name} catches fire in oxygen to form ${m.name} oxide.` };
+            if (m.cat === 'alkaline')
+                return { name:'Metal Oxide', emoji:'☀️', effect:'light', warn:false, product:`${m.name} oxide, ${m.sym}O`, fact:`${m.name} burns brightly in oxygen to form ${m.name} oxide.` };
+            if (m.cat === 'transition' || m.cat === 'postt')
+                return { name:'Rust / Oxide', emoji:'🟤', effect:'rust', warn:false, product:`${m.name} oxide`, fact:`${m.name} reacts with oxygen to form ${m.name} oxide — a kind of rust or tarnish.` };
+        }
+        // hydrogen + halogen -> acid gas
+        if (H && X && H !== X)
+            return { name:'Acid Gas', emoji:'💨', effect:'smoke', warn:false, product:`Hydrogen ${HALIDE[X.sym]}, H${X.sym}`, fact:`Hydrogen joins with ${X.name.toLowerCase()} to form hydrogen ${HALIDE[X.sym]}, an acidic gas.` };
+        return null;
+    }
+    function reactionFor(els) {
+        if (els.length !== 2) return null;
+        const s = SPECIFIC[combo(els[0].sym, els[1].sym)];
+        if (s) return s;
+        return genericReaction(els[0], els[1]);
+    }
+
+    /* ===== GUIDE (general category patterns, for display) ===== */
+    const GUIDE = [
+        {need:[{cat:'alkali'},{cat:'halogen'}], emoji:'💥', name:'a salt (explosion!)'},
+        {need:[{cat:'alkaline'},{cat:'halogen'}], emoji:'⚡', name:'a salt'},
+        {need:[{sym:'H'},{sym:'O'}], emoji:'💥', name:'Water'},
+        {need:[{cat:'alkaline'},{sym:'O'}], emoji:'☀️', name:'a bright-burning oxide'},
+        {need:[{cat:'alkali'},{sym:'O'}], emoji:'🔥', name:'a metal oxide'},
+        {need:[{cat:'transition'},{sym:'O'}], emoji:'🟤', name:'rust / an oxide'},
+        {need:[{sym:'C'},{sym:'O'}], emoji:'🔥', name:'Carbon Dioxide'},
+        {need:[{sym:'H'},{cat:'halogen'}], emoji:'💨', name:'an acid gas'},
+        {need:[{sym:'H'},{sym:'N'}], emoji:'💨', name:'Ammonia'},
     ];
 
-    /* ============ Build the periodic table ============ */
+    /* ===== Build periodic table ===== */
     const ptable = document.getElementById('ptable');
     ELS.forEach(el => {
         const b = document.createElement('button');
-        b.className = 'el';
-        b.style.gridColumn = el.col;
-        b.style.gridRow = el.row;
-        b.style.background = CATS[el.cat].color;
-        b.dataset.sym = el.sym;
+        b.className = 'el'; b.style.gridColumn = el.col; b.style.gridRow = el.row;
+        b.style.background = CATS[el.cat].color; b.dataset.sym = el.sym;
         b.title = el.name + ' — ' + CATS[el.cat].name;
         b.innerHTML = `<span class="en">${el.n}</span><span class="es">${el.sym}</span>`;
         b.addEventListener('click', () => toggleEl(el.sym));
         ptable.appendChild(b);
     });
-    // placeholder tiles pointing to the lanthanide/actinide rows
     [[3,6,'57-71'],[3,7,'89-103']].forEach(([c,r,txt]) => {
-        const d = document.createElement('div');
-        d.className = 'el placeholder';
-        d.style.gridColumn = c; d.style.gridRow = r;
-        d.innerHTML = `<span class="es" style="font-size:.62rem">${txt}</span>`;
+        const d = document.createElement('div'); d.className='el placeholder';
+        d.style.gridColumn=c; d.style.gridRow=r; d.innerHTML=`<span class="es" style="font-size:.62rem">${txt}</span>`;
         ptable.appendChild(d);
     });
 
-    /* ============ Legend ============ */
+    /* ===== Legend ===== */
     const legend = document.getElementById('legend');
-    Object.keys(CATS).forEach(k => {
-        const s = document.createElement('span');
-        s.innerHTML = `<span class="swatch" style="background:${CATS[k].color}"></span>${CATS[k].name}`;
-        legend.appendChild(s);
-    });
+    Object.keys(CATS).forEach(k => { const s=document.createElement('span'); s.innerHTML=`<span class="swatch" style="background:${CATS[k].color}"></span>${CATS[k].name}`; legend.appendChild(s); });
 
-    /* ============ Reaction guide ============ */
+    /* ===== Guide list ===== */
     const guideList = document.getElementById('guideList');
     function tokenTag(tok) {
-        if (tok.cat) return `<span class="tag" style="background:${CATS[tok.cat].color}">${CATS[tok.cat].name}</span>`;
-        return `<span class="tag" style="background:${CATS[EL[tok.sym].cat].color}">${EL[tok.sym].name}</span>`;
+        const cat = tok.cat ? tok.cat : EL[tok.sym].cat;
+        const label = tok.cat ? CATS[tok.cat].name : EL[tok.sym].name;
+        return `<span class="tag" style="background:${CATS[cat].color}">${label}</span>`;
     }
-    RULES.forEach(r => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${r.emoji}</span>${tokenTag(r.need[0])}<span class="arrow">+</span>${tokenTag(r.need[1])}<span class="arrow">&rarr;</span><strong>${r.name}</strong>`;
-        guideList.appendChild(li);
-    });
-    // inert note
-    const inertLi = document.createElement('li');
-    inertLi.innerHTML = `<span>😶</span><span class="tag" style="background:var(--c-noble)">Noble gas</span><span class="arrow">&rarr;</span> never reacts (they're inert!)`;
+    GUIDE.forEach(r => { const li=document.createElement('li');
+        li.innerHTML=`<span>${r.emoji}</span>${tokenTag(r.need[0])}<span class="arrow">+</span>${tokenTag(r.need[1])}<span class="arrow">&rarr;</span><strong>${r.name}</strong>`;
+        guideList.appendChild(li); });
+    const inertLi=document.createElement('li');
+    inertLi.innerHTML=`<span>😶</span><span class="tag" style="background:var(--c-noble)">Noble gas</span><span class="arrow">&rarr;</span> never reacts (they're inert!)`;
     guideList.appendChild(inertLi);
 
-    /* ============ Game state ============ */
+    /* ===== Game state ===== */
     let selected = [];
     const discovered = [], discoveredKeys = new Set();
     const NEEDED = 5;
-    const chipsEl = document.getElementById('chips');
-    const mixBtn = document.getElementById('mixBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const resultEl = document.getElementById('result');
-    const beaker = document.getElementById('beaker');
-    const stage = document.getElementById('stage');
-    const dotsEl = document.getElementById('dots');
+    const chipsEl=document.getElementById('chips'), mixBtn=document.getElementById('mixBtn'), clearBtn=document.getElementById('clearBtn');
+    const resultEl=document.getElementById('result'), beaker=document.getElementById('beaker'), stage=document.getElementById('stage'), dotsEl=document.getElementById('dots');
     for (let i=0;i<NEEDED;i++){ const d=document.createElement('div'); d.className='dot'; d.textContent=i+1; dotsEl.appendChild(d); }
 
-    function toggleEl(sym) {
-        const i = selected.indexOf(sym);
-        if (i>=0) selected.splice(i,1);
-        else { if (selected.length>=3) return; selected.push(sym); }
-        render();
-    }
-    function render() {
-        if (!selected.length) chipsEl.innerHTML = '<span class="hint">Click 2 or 3 elements above</span>';
-        else {
-            chipsEl.innerHTML='';
-            selected.forEach(sym=>{
-                const c=document.createElement('span'); c.className='chip';
-                c.innerHTML=`${sym} <button title="remove">&times;</button>`;
-                c.querySelector('button').addEventListener('click',()=>toggleEl(sym));
-                chipsEl.appendChild(c);
-            });
-        }
+    function toggleEl(sym){ const i=selected.indexOf(sym); if(i>=0) selected.splice(i,1); else { if(selected.length>=3) return; selected.push(sym); } render(); }
+    function render(){
+        if(!selected.length) chipsEl.innerHTML='<span class="hint">Click 2 elements above</span>';
+        else { chipsEl.innerHTML=''; selected.forEach(sym=>{ const c=document.createElement('span'); c.className='chip';
+            c.innerHTML=`${sym} <button title="remove">&times;</button>`; c.querySelector('button').addEventListener('click',()=>toggleEl(sym)); chipsEl.appendChild(c); }); }
         document.querySelectorAll('.el').forEach(b=>{ if(b.dataset.sym) b.classList.toggle('selected', selected.includes(b.dataset.sym)); });
-        mixBtn.disabled = selected.length<2;
-        clearBtn.disabled = selected.length===0;
+        mixBtn.disabled = selected.length<2; clearBtn.disabled = selected.length===0;
     }
-    clearBtn.addEventListener('click', ()=>{ selected=[]; render(); });
+    clearBtn.addEventListener('click',()=>{ selected=[]; render(); });
 
-    /* ---- match a rule against the selected elements ---- */
-    function needMatch(el, need){ return need.sym ? el.sym===need.sym : el.cat===need.cat; }
-    function permutations(arr){
-        if (arr.length<=1) return [arr];
-        const out=[];
-        arr.forEach((v,i)=>{ const rest=arr.slice(0,i).concat(arr.slice(i+1));
-            permutations(rest).forEach(p=>out.push([v,...p])); });
-        return out;
-    }
-    function ruleMatches(els, rule){
-        if (els.length!==rule.need.length) return false;
-        return permutations(els).some(order => order.every((el,i)=>needMatch(el, rule.need[i])));
-    }
-    function findReaction(els){
-        for (const r of RULES) if (ruleMatches(els, r)) return r;
-        return null;
-    }
-    function ruleKey(rule){ return rule.combo; }
-
-    mixBtn.addEventListener('click', ()=>{
-        if (selected.length<2) return;
+    mixBtn.addEventListener('click',()=>{
+        if(selected.length<2) return;
         const els = selected.map(s=>EL[s]);
         const hasNoble = els.some(e=>e.cat==='noble');
-        const rxn = findReaction(els);
-        if (rxn) {
+        const rxn = reactionFor(els);
+        if(rxn){
             runEffect(rxn.effect);
-            const k = ruleKey(rxn);
+            const k = combo(els[0].sym, els.length>1?els[1].sym:els[0].sym) + (els.length>2?'+'+els[2].sym:'');
             const isNew = !discoveredKeys.has(k);
-            if (isNew){ discoveredKeys.add(k); discovered.push(rxn); updateProgress(); }
+            if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
             showResult(rxn, isNew);
-            if (discovered.length>=NEEDED) setTimeout(startQuiz, 1600);
-        } else if (hasNoble) {
-            showInert();
-        } else {
-            showNoReaction();
-        }
+            if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
+        } else if(hasNoble){ showInert(); }
+        else showNoReaction();
         selected=[]; render();
     });
 
-    function updateProgress(){
-        document.getElementById('count').textContent = discovered.length;
-        const dots=dotsEl.children;
-        for (let i=0;i<NEEDED;i++){ dots[i].classList.toggle('filled', i<discovered.length); if(i<discovered.length) dots[i].textContent='✓'; }
-    }
-    function showResult(rxn, isNew){
-        resultEl.className='result show';
-        resultEl.innerHTML = `<div class="r-emoji">${rxn.emoji}</div>
-            <h3>${rxn.name}${isNew?'':' (already discovered)'}</h3>
-            <div class="r-product">You made: ${rxn.product}</div>
-            <div class="r-fact">${rxn.fact}</div>
-            ${rxn.warn?'<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>':''}`;
-    }
-    function showInert(){
-        resultEl.className='result show norxn';
+    function updateProgress(){ document.getElementById('count').textContent=discovered.length;
+        const dots=dotsEl.children; for(let i=0;i<NEEDED;i++){ dots[i].classList.toggle('filled', i<discovered.length); if(i<discovered.length) dots[i].textContent='✓'; } }
+    function showResult(rxn,isNew){ resultEl.className='result show';
+        resultEl.innerHTML=`<div class="r-emoji">${rxn.emoji}</div><h3>${rxn.name}${isNew?'':' (already discovered)'}</h3>
+            <div class="r-product">You made: ${rxn.product}</div><div class="r-fact">${rxn.fact}</div>
+            ${rxn.warn?'<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>':''}`; }
+    function showInert(){ resultEl.className='result show norxn';
         resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>No reaction — it's a noble gas!</h3>
-            <div class="r-fact">Noble gases (like helium, neon, argon) have a full set of electrons, so they almost never react with anything. That's why they're called "inert"!</div>`;
-    }
-    function showNoReaction(){
-        resultEl.className='result show norxn';
+            <div class="r-fact">Noble gases (helium, neon, argon...) already have a full set of electrons, so they almost never react. That's why they're called "inert"!</div>`; }
+    function showNoReaction(){ resultEl.className='result show norxn';
         resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>No reaction</h3>
-            <div class="r-fact">These don't react under normal conditions. Check the Reaction Guide for combos that DO react — most random mixtures in real chemistry do nothing!</div>`;
-    }
+            <div class="r-fact">These don't react under normal conditions. Check the Reaction Guide for combos that DO react — in real chemistry, most random mixtures do nothing!</div>`; }
 
-    /* ============ EFFECTS ============ */
-    function runEffect(type){
-        beaker.classList.remove('shake'); void beaker.offsetWidth;
-        const rect=stage.getBoundingClientRect(); const cx=rect.width/2, cy=rect.height-45;
-        if (type==='explosion'){ beaker.classList.add('shake'); flash(); burst(cx,cy,34,['#ff6b35','#ffd23f','#ff2e2e','#ff9e3d'],3,9); }
-        else if (type==='flame'){ emojiRise(cx,cy,['🔥','🔥','🔥']); burst(cx,cy,14,['#ff6b35','#ffd23f'],2,6); }
-        else if (type==='fizz'){ bubbles(cx,cy,26,['#bfe6f7','#fff','#d6f0ff']); }
-        else if (type==='smoke'){ emojiRise(cx,cy,['💨','☁️','💨']); }
-        else if (type==='light'){ flash(); burst(cx,cy,20,['#fff','#fff7cc','#eaf6ff'],2,7); }
-        else if (type==='rust'){ beaker.style.filter='sepia(1) saturate(3) hue-rotate(-10deg)'; setTimeout(()=>beaker.style.filter='',1400); burst(cx,cy,14,['#8a5a2b','#b5651d','#7a3f10'],2,5); }
+    /* ===== Effects ===== */
+    function runEffect(type){ beaker.classList.remove('shake'); void beaker.offsetWidth;
+        const rect=stage.getBoundingClientRect(), cx=rect.width/2, cy=rect.height-45;
+        if(type==='explosion'){ beaker.classList.add('shake'); flash(); burst(cx,cy,34,['#ff6b35','#ffd23f','#ff2e2e','#ff9e3d'],3,9); }
+        else if(type==='flame'){ emojiRise(cx,cy,['🔥','🔥','🔥']); burst(cx,cy,14,['#ff6b35','#ffd23f'],2,6); }
+        else if(type==='smoke'){ emojiRise(cx,cy,['💨','☁️','💨']); }
+        else if(type==='light'){ flash(); burst(cx,cy,20,['#fff','#fff7cc','#eaf6ff'],2,7); }
+        else if(type==='rust'){ beaker.style.filter='sepia(1) saturate(3) hue-rotate(-10deg)'; setTimeout(()=>beaker.style.filter='',1400); burst(cx,cy,14,['#8a5a2b','#b5651d','#7a3f10'],2,5); }
     }
     function flash(){ const f=document.createElement('div'); f.className='flash'; stage.appendChild(f); setTimeout(()=>f.remove(),500); }
-    function burst(cx,cy,n,colors,minR,maxR){
-        for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='particle';
-            const size=minR+Math.random()*(maxR-minR); p.style.width=p.style.height=size+'px';
-            p.style.background=colors[i%colors.length]; p.style.left=cx+'px'; p.style.top=cy+'px'; stage.appendChild(p);
-            const a=Math.random()*Math.PI*2, dist=60+Math.random()*120, dx=Math.cos(a)*dist, dy=Math.sin(a)*dist-40;
-            p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:700+Math.random()*400,easing:'cubic-bezier(.2,.7,.3,1)'});
-            setTimeout(()=>p.remove(),1100);
-        }
-    }
-    function bubbles(cx,cy,n,colors){
-        for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='particle';
-            const size=6+Math.random()*14; p.style.width=p.style.height=size+'px'; p.style.background=colors[i%colors.length]; p.style.opacity=.8;
-            p.style.left=(cx-25+Math.random()*50)+'px'; p.style.top=cy+'px'; stage.appendChild(p);
-            const dy=-(120+Math.random()*90), dx=(Math.random()-.5)*40;
-            p.animate([{transform:'translate(0,0)',opacity:.85},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:900+Math.random()*700,easing:'ease-out'});
-            setTimeout(()=>p.remove(),1600);
-        }
-    }
-    function emojiRise(cx,cy,emojis){
-        emojis.forEach((e,i)=>{ const el=document.createElement('div'); el.className='emoji-burst'; el.textContent=e;
-            el.style.left=(cx-20+(i-1)*30)+'px'; el.style.top=(cy-30)+'px'; stage.appendChild(el);
-            el.animate([{transform:'translateY(0) scale(.6)',opacity:0},{transform:'translateY(-30px) scale(1.1)',opacity:1,offset:.3},{transform:'translateY(-130px) scale(1.2)',opacity:0}],{duration:1400,easing:'ease-out',delay:i*120});
-            setTimeout(()=>el.remove(),1600);
-        });
-    }
+    function burst(cx,cy,n,colors,minR,maxR){ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='particle';
+        const size=minR+Math.random()*(maxR-minR); p.style.width=p.style.height=size+'px'; p.style.background=colors[i%colors.length]; p.style.left=cx+'px'; p.style.top=cy+'px'; stage.appendChild(p);
+        const a=Math.random()*Math.PI*2, dist=60+Math.random()*120, dx=Math.cos(a)*dist, dy=Math.sin(a)*dist-40;
+        p.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${dx}px,${dy}px)`,opacity:0}],{duration:700+Math.random()*400,easing:'cubic-bezier(.2,.7,.3,1)'}); setTimeout(()=>p.remove(),1100); } }
+    function emojiRise(cx,cy,emojis){ emojis.forEach((e,i)=>{ const el=document.createElement('div'); el.className='emoji-burst'; el.textContent=e;
+        el.style.left=(cx-20+(i-1)*30)+'px'; el.style.top=(cy-30)+'px'; stage.appendChild(el);
+        el.animate([{transform:'translateY(0) scale(.6)',opacity:0},{transform:'translateY(-30px) scale(1.1)',opacity:1,offset:.3},{transform:'translateY(-130px) scale(1.2)',opacity:0}],{duration:1400,easing:'ease-out',delay:i*120}); setTimeout(()=>el.remove(),1600); }); }
 
-    /* ============ QUIZ ============ */
+    /* ===== Quiz: which two elements made this product? ===== */
     let quizQuestions=[], quizIndex=0, quizScore=0;
     const overlay=document.getElementById('overlay'), quizCard=document.getElementById('quizCard');
+    function pairLabel(syms){ return syms.map(s=>EL[s].name).join(' + '); }
     function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
     function startQuiz(){
-        const chosen=discovered.slice(0,NEEDED);
-        quizQuestions=chosen.map(rxn=>{
-            const correct=rxn.combo;
-            const pool=RULES.filter(r=>r.combo!==rxn.combo).map(r=>r.combo);
-            shuffle(pool);
+        const chosen = discovered.slice(0,NEEDED);
+        const distractPool = SPECIFIC_LIST.map(r=>pairLabel(r.els)).concat(discovered.map(d=>pairLabel(d.els)));
+        quizQuestions = chosen.map(d=>{
+            const correct = pairLabel(d.els);
+            const pool = shuffle(distractPool.filter(l=>l!==correct));
             const options=[correct];
             for(const o of pool){ if(options.length>=4) break; if(!options.includes(o)) options.push(o); }
-            return { rxn, correct, options:shuffle(options) };
+            return { d, correct, options:shuffle(options) };
         });
         quizIndex=0; quizScore=0; overlay.classList.add('show'); renderQuestion();
     }
-    function renderQuestion(){
-        const q=quizQuestions[quizIndex];
+    function renderQuestion(){ const q=quizQuestions[quizIndex];
         quizCard.innerHTML=`<div class="q-count">Question ${quizIndex+1} of ${quizQuestions.length}</div>
-            <div class="q-text">${q.rxn.emoji} Which combination makes the reaction <strong>&ldquo;${q.rxn.name}&rdquo;</strong> (you made ${q.rxn.product})?</div>
+            <div class="q-text">${q.d.rxn.emoji} Which two elements did you combine to make <strong>${q.d.rxn.product}</strong>?</div>
             <div class="q-options" id="qOptions"></div><div class="q-fact" id="qFact"></div>`;
         const wrap=document.getElementById('qOptions');
-        q.options.forEach(opt=>{ const btn=document.createElement('button'); btn.className='q-opt'; btn.textContent=opt;
-            btn.addEventListener('click',()=>answer(btn,q)); wrap.appendChild(btn); });
+        q.options.forEach(opt=>{ const btn=document.createElement('button'); btn.className='q-opt'; btn.textContent=opt; btn.addEventListener('click',()=>answer(btn,q)); wrap.appendChild(btn); });
     }
-    function answer(btn,q){
-        quizCard.querySelectorAll('.q-opt').forEach(b=>{ b.disabled=true; if(b.textContent===q.correct) b.classList.add('correct'); });
+    function answer(btn,q){ quizCard.querySelectorAll('.q-opt').forEach(b=>{ b.disabled=true; if(b.textContent===q.correct) b.classList.add('correct'); });
         if(btn.textContent===q.correct) quizScore++; else btn.classList.add('wrong');
-        document.getElementById('qFact').textContent=q.rxn.fact;
+        document.getElementById('qFact').textContent=q.d.rxn.fact;
         const next=document.createElement('button'); next.className='btn btn-mix'; next.style.marginTop='1.2rem';
         next.textContent=(quizIndex<quizQuestions.length-1)?'Next question':'See my score';
         next.addEventListener('click',()=>{ quizIndex++; if(quizIndex<quizQuestions.length) renderQuestion(); else showScore(); });
         quizCard.appendChild(next);
     }
-    function showScore(){
-        let msg = quizScore===5?'Perfect score — you’re a real chemist! 🧪':(quizScore>=3?'Great memory! 👏':'Good try — play again to remember more!');
+    function showScore(){ let msg=quizScore===5?'Perfect score — you’re a real chemist! 🧪':(quizScore>=3?'Great memory! 👏':'Good try — play again to remember more!');
         quizCard.innerHTML=`<h2>Quiz Complete</h2><div class="score-big">${quizScore} / 5</div><p>${msg}</p>
             <button class="btn btn-mix" id="restartBtn" style="margin-top:1.2rem">Play again</button>`;
-        document.getElementById('restartBtn').addEventListener('click',restart);
-    }
-    function restart(){
-        overlay.classList.remove('show'); discovered.length=0; discoveredKeys.clear(); selected=[];
-        updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML='';
-    }
+        document.getElementById('restartBtn').addEventListener('click',restart); }
+    function restart(){ overlay.classList.remove('show'); discovered.length=0; discoveredKeys.clear(); selected=[]; updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML=''; }
     </script>
 </body>
 </html>
