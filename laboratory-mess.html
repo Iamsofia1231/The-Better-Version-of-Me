@@ -110,6 +110,7 @@
         .tip .tip-name { font-weight:700; margin-bottom:.35rem; }
         .tip .tip-row { font-size:.78rem; color:#555; }
         .tip .tip-fact { margin-top:.4rem; font-size:.82rem; color:#333; line-height:1.42; }
+        .tip .tip-label { color:var(--light-navy); }
         @media (max-width:600px){ header h1 { font-size:3rem; } }
     </style>
 </head>
@@ -250,7 +251,7 @@
         return `<div class="tip-sym">${el.sym}</div><div class="tip-name">${el.name}</div>
             <div class="tip-row">Atomic number: <b>${el.n}</b> &nbsp;•&nbsp; ${CATS[el.cat].name}</div>
             <div class="tip-row">Electron shells: <b>${shells}</b></div>
-            <div class="tip-fact">💡 ${fact}</div>`;
+            <div class="tip-fact"><b class="tip-label">Fun fact:</b> ${fact}</div>`;
     }
     function placeTip(tileEl){
         tip.style.display = 'block';
@@ -264,8 +265,8 @@
     function showTip(el, tileEl){ tip.innerHTML = elInfo(el); placeTip(tileEl); }
     // hover text for the two "57-71" / "89-103" signpost boxes
     const PLACEHOLDER_INFO = {
-        '57-71': `<div class="tip-sym" style="font-size:1.2rem">Lanthanides</div><div class="tip-name">Elements 57–71</div><div class="tip-fact">💡 These 15 elements (Lanthanum → Lutetium) actually belong right here in the table. To stop the table from getting super wide, they're pulled out and shown in the first pink row at the bottom.</div>`,
-        '89-103': `<div class="tip-sym" style="font-size:1.2rem">Actinides</div><div class="tip-name">Elements 89–103</div><div class="tip-fact">💡 These 15 elements (Actinium → Lawrencium) belong right here too. They're pulled out and shown in the second pink row at the bottom so the whole table stays readable.</div>`
+        '57-71': `<div class="tip-sym" style="font-size:1.2rem">Lanthanides</div><div class="tip-name">Elements 57–71</div><div class="tip-fact"><b class="tip-label">Fun fact:</b> These 15 elements (Lanthanum → Lutetium) actually belong right here in the table. To stop the table from getting super wide, they're pulled out and shown in the first pink row at the bottom.</div>`,
+        '89-103': `<div class="tip-sym" style="font-size:1.2rem">Actinides</div><div class="tip-name">Elements 89–103</div><div class="tip-fact"><b class="tip-label">Fun fact:</b> These 15 elements (Actinium → Lawrencium) belong right here too. They're pulled out and shown in the second pink row at the bottom so the whole table stays readable.</div>`
     };
     function hideTip(){ tip.style.display = 'none'; }
 
