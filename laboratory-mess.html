@@ -533,6 +533,7 @@
     /* ===== Simple rotating 3D ball-and-stick model, built from the product formula ===== */
     const CPK = { H:'#f2f2f2', O:'#ff4d4d', N:'#4d70ff', C:'#3a3a3a', S:'#ffd633', F:'#7ee87e', Cl:'#3ccf3c', Br:'#b5642f', I:'#8a3fbf', P:'#ff8000', B:'#ffb0b0', Si:'#c9a96b', Na:'#ab5cf2', K:'#8f40d4', Li:'#cc6688', Ca:'#4fd24f', Mg:'#8fd24f', Fe:'#e06633', Cu:'#c88033', Al:'#bfc4cc' };
     const RAD = { H:9, O:15, N:15, C:16, S:19, F:13, Cl:17, Br:19, I:21, Na:20, K:22 };
+    function shade(hex, k){ const n=parseInt(hex.slice(1),16); return `rgb(${Math.round(((n>>16)&255)*k)},${Math.round(((n>>8)&255)*k)},${Math.round((n&255)*k)})`; }
     const SUB = '₀₁₂₃₄₅₆₇₈₉';
     function extractFormula(product){
         const paren = product.match(/\(([^)]+)\)/);
@@ -569,19 +570,24 @@
             const cs=Math.cos(ay), sn=Math.sin(ay), ct=Math.cos(ax), st=Math.sin(ax);
             const pr = mol.atoms.map(a=>{
                 const x=a.x*cs - a.z*sn, z=a.x*sn + a.z*cs, y=a.y;
-                const y2=y*ct - z*st, z2=y*st + z*ct, f=320/(320 + z2*36), scale=34;
+                const y2=y*ct - z*st, z2=y*st + z*ct, f=320/(320 + z2*52), scale=34;
                 return { el:a.el, sx:W/2 + x*scale*f, sy:H/2 + y2*scale*f, z:z2, r:(RAD[a.el]||17)*f };
             });
+            const zs=pr.map(q=>q.z), zmin=Math.min(...zs), zmax=Math.max(...zs), zr=(zmax-zmin)||1;
+            // draw bonds first (they sit behind the atoms)
             ctx.lineWidth=7; ctx.strokeStyle='#c7d0da'; ctx.lineCap='round';
             mol.bonds.forEach(([i,j])=>{ ctx.beginPath(); ctx.moveTo(pr[i].sx,pr[i].sy); ctx.lineTo(pr[j].sx,pr[j].sy); ctx.stroke(); });
-            [...pr.keys()].sort((a,b)=>pr[a].z-pr[b].z).forEach(k=>{
+            // atoms: FARTHEST first so nearer atoms are painted on top (real 3D occlusion)
+            [...pr.keys()].sort((a,b)=>pr[b].z-pr[a].z).forEach(k=>{
                 const p=pr[k], col=CPK[p.el]||'#9aa4ad';
-                // smaller, softer highlight so the atom label stays readable
+                const t=(p.z-zmin)/zr;                 // 0 = nearest, 1 = farthest
+                const base=shade(col, 1-0.42*t);       // atoms further back are dimmer
                 const g=ctx.createRadialGradient(p.sx-p.r*0.35, p.sy-p.r*0.35, p.r*0.08, p.sx, p.sy, p.r);
-                g.addColorStop(0,'rgba(255,255,255,0.45)'); g.addColorStop(0.18, col); g.addColorStop(1, col);
+                g.addColorStop(0,`rgba(255,255,255,${0.45*(1-0.6*t)})`); g.addColorStop(0.18, base); g.addColorStop(1, base);
                 ctx.beginPath(); ctx.arc(p.sx,p.sy,p.r,0,7); ctx.fillStyle=g; ctx.fill();
-                ctx.fillStyle = (p.el==='H'||p.el==='O'||p.el==='N'||p.el==='F') ? '#1a2332' : '#fff';
-                ctx.font=`bold ${Math.round(p.r*0.9)}px Segoe UI, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.lineWidth=1.5; ctx.strokeStyle='rgba(0,0,0,0.14)'; ctx.stroke();   // subtle rim for depth
+                ctx.fillStyle = (p.el==='H'||p.el==='F') ? '#1a2332' : '#fff';
+                ctx.font=`bold ${Math.round(p.r*0.92)}px Segoe UI, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
                 ctx.fillText(p.el, p.sx, p.sy);
             });
         }
