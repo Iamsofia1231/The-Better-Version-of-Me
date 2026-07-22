@@ -517,26 +517,81 @@
         if (els.every(isMetal)) return 'alloy';
         return 'combine';
     }
-    const NEEDS = {
-        salt:'A quick spark or a little heat to get it started — then it gives off so much energy it keeps itself going.',
-        oxide:'Oxygen from the air, plus usually some heat to kick it off (the most reactive metals burn all on their own).',
-        combustion:'Oxygen and a spark or flame to reach the "ignition" temperature.',
-        burn:'A spark or flame — the gases can sit together safely until something ignites them.',
-        acidgas:'The two gases mixed together, plus light or heat to start a chain reaction.',
-        synthesis:'Often high pressure, high heat, and a catalyst (a helper that speeds things up without being used up).',
-        alloy:'Melting the metals together at high heat, then cooling them — for magnets, inside a strong magnetic field.',
-        combine:'Usually some heat to get the atoms moving and reacting.'
-    };
-    const STEPS = {
-        salt:['The metal atom gives away one or more of its outer electrons.','The halogen atom grabs those electrons, so both now have full, stable shells.','The metal becomes a positive ion (+) and the halogen a negative ion (−).','Opposite charges attract, snapping the ions into a repeating crystal grid — a salt!'],
-        oxide:['Oxygen molecules (O₂) split into single oxygen atoms.','Metal atoms hand their outer electrons to the oxygen atoms.','The positive metal ions and negative oxide ions bond into a solid oxide.'],
-        combustion:['Heat gives the atoms enough energy to break their starting bonds.','The atoms grab onto oxygen atoms.','New bonds form and release lots of energy as heat and light — that\'s the fire!'],
-        burn:['A spark splits some of the H₂ and O₂ molecules into atoms.','Each oxygen atom grabs two hydrogen atoms.','They bond into water and release a huge burst of energy — boom!'],
-        acidgas:['Light or heat splits a halogen molecule into two reactive atoms.','A halogen atom steals a hydrogen from a hydrogen molecule.','This keeps chaining until you have hydrogen-halide gas (like HCl).'],
-        synthesis:['The starting molecules are pulled apart into atoms.','The atoms rearrange into a brand-new combination.','They bond together into the new compound.'],
-        alloy:['The metals are melted and blended into a liquid mixture.','As it cools, the atoms lock into a special crystal pattern.','A strong magnetic field lines up the crystals so the whole piece becomes a powerful magnet.'],
-        combine:['Heat energizes the atoms so they start moving fast.','The atoms share or swap electrons.','They bond together into the new compound.']
-    };
+    // Detailed, element-aware "conditions" and "step by step" for each reaction.
+    function reactionDetail(type, els){
+        const isMetal = e => metalCats.includes(e.cat);
+        const metal = els.find(isMetal), hal = els.find(e=>e.cat==='halogen');
+        const O = els.find(e=>e.sym==='O'), H = els.find(e=>e.sym==='H');
+        const a = els[0], b = els[1] || els[0];
+        const fuel = O ? (els.find(e=>e!==O) || a) : a;
+        const halide = hal ? HALIDE[hal.sym] : 'halide';
+        const halArt = hal && /^[AEIOU]/i.test(hal.name) ? 'an' : 'a';
+        switch (type) {
+            case 'salt': return {
+                needs:`Just a small spark or a bit of heat to get it going. Once it starts, the reaction gives off so much energy — as heat and light — that it powers itself and can even explode.`,
+                steps:[
+                    `The ${metal.name} atom loses its outer electron(s) very easily — that is exactly what makes metals like this so reactive.`,
+                    `The ${hal.name} atom is "hungry" for electrons and grabs them, so now both atoms have full, stable outer shells.`,
+                    `That leaves ${metal.name} as a positive ion (${metal.sym}⁺) and ${hal.name} as a negative ion.`,
+                    `The opposite charges pull together and stack into a repeating 3-D crystal grid — a solid salt you could hold in your hand.`
+                ]};
+            case 'oxide': return {
+                needs:`Oxygen from the air, plus usually some heat to get it started. The most reactive metals will burn in oxygen all by themselves, sometimes with a bright flame or a shower of sparks.`,
+                steps:[
+                    `Oxygen molecules (O₂) break apart into single, very reactive oxygen atoms.`,
+                    `Each ${metal.name} atom hands its outer electrons over to an oxygen atom.`,
+                    `Now ${metal.name} is a positive ion and oxygen is a negative "oxide" ion (O²⁻).`,
+                    `The ions bond together, building up a solid layer of ${metal.name} oxide.`
+                ]};
+            case 'combustion': return {
+                needs:`Oxygen plus enough heat — a spark or flame — to reach the "ignition temperature," the point where it catches fire and then keeps burning on its own.`,
+                steps:[
+                    `Heat gives the ${fuel.name} and oxygen atoms enough energy to break out of their original molecules.`,
+                    `The ${fuel.name} atoms quickly grab onto oxygen atoms.`,
+                    `Strong new bonds form, and that releases a big burst of energy as heat and light — the flame you see.`,
+                    `The product drifts away as a gas.`
+                ]};
+            case 'burn': return {
+                needs:`A single spark or flame to set it off. Hydrogen and oxygen can actually sit mixed together safely — until something ignites them, and then it all happens in an instant.`,
+                steps:[
+                    `A spark gives some hydrogen (H₂) and oxygen (O₂) molecules enough energy to split into single atoms.`,
+                    `Each oxygen atom grabs two hydrogen atoms.`,
+                    `They snap together into water molecules (H₂O), each shaped like a wide "V".`,
+                    `All that bonding releases a huge amount of energy at once — that is the explosion, and the only "exhaust" left over is water!`
+                ]};
+            case 'acidgas': return {
+                needs:`The two gases mixed together, plus a bit of light or heat to kick off a "chain reaction" — where each step keeps triggering the next one automatically.`,
+                steps:[
+                    `Light or heat splits ${halArt} ${hal.name} molecule (${hal.sym}₂) into two very reactive ${hal.name} atoms.`,
+                    `A ${hal.name} atom steals a hydrogen from a hydrogen molecule (H₂), leaving a lone hydrogen atom behind.`,
+                    `That lone hydrogen attacks another ${hal.name} molecule, freeing a new ${hal.name} atom — and the chain repeats over and over.`,
+                    `The result is hydrogen ${halide} gas, which turns into a strong acid the moment it dissolves in water.`
+                ]};
+            case 'synthesis': return {
+                needs:`Usually tough conditions: high pressure, high heat, and often a catalyst — a helper substance that speeds the reaction up without being used up itself.`,
+                steps:[
+                    `The starting molecules of ${a.name} and ${b.name} are pulled apart into separate atoms.`,
+                    `Squeezed together under pressure, the atoms rearrange into a brand-new pattern.`,
+                    `They form fresh bonds, building the new compound one molecule at a time.`,
+                    `Because it is hard to get going, factories use catalysts to make enough of it quickly.`
+                ]};
+            case 'alloy': return {
+                needs:`A furnace to melt the metals together, then careful cooling — and for magnets, that cooling happens inside a strong magnetic field.`,
+                steps:[
+                    `${a.name} and ${b.name} are melted together into a glowing liquid mixture.`,
+                    `As it cools, the atoms lock into a special, very orderly crystal pattern.`,
+                    `The solid is cooled inside a powerful magnetic field, which lines up all the tiny magnetic regions inside it.`,
+                    `Now the whole piece pulls strongly on metal — it has become a permanent magnet.`
+                ]};
+            default: return {
+                needs:`Usually some heat to get the atoms moving fast enough to react. Once it starts, many of these reactions give off their own heat and keep going.`,
+                steps:[
+                    `Heat energizes the ${a.name} and ${b.name} atoms so they collide harder.`,
+                    `The atoms share or trade electrons to reach a more stable arrangement.`,
+                    `They bond together into a brand-new solid compound.`
+                ]};
+        }
+    }
 
     /* ===== Simple rotating 3D ball-and-stick model, built from the product formula ===== */
     const CPK = { H:'#f2f2f2', O:'#ff4d4d', N:'#4d70ff', C:'#3a3a3a', S:'#ffd633', F:'#7ee87e', Cl:'#3ccf3c', Br:'#b5642f', I:'#8a3fbf', P:'#ff8000', B:'#ffb0b0', Si:'#c9a96b', Na:'#ab5cf2', K:'#8f40d4', Li:'#cc6688', Ca:'#4fd24f', Mg:'#8fd24f', Fe:'#e06633', Cu:'#c88033', Al:'#bfc4cc' };
@@ -611,6 +666,7 @@
 
     function showResult(rxn, isNew, els){
         const type = typeOf(els);
+        const detail = reactionDetail(type, els);
         const mol = buildMolecule(rxn.product);
         resultEl.className='result show';
         resultEl.innerHTML=`
@@ -619,9 +675,9 @@
                 <div class="r-product">You made: ${rxn.product}</div></div></div>
             <canvas class="mol3d" id="mol3d" width="250" height="175"></canvas>
             <div class="mol-hint">🖱️ drag the molecule to spin it around</div>
-            <div class="r-sec"><b>🔬 What it is &amp; what it's used for:</b> ${rxn.fact}</div>
-            <div class="r-sec"><b>⚗️ What you need to make it happen:</b> ${NEEDS[type]}</div>
-            <div class="r-sec"><b>🧪 How it happens, step by step:</b><ol class="r-steps">${STEPS[type].map(s=>`<li>${s}</li>`).join('')}</ol></div>
+            <div class="r-sec"><b>What it is &amp; what it's used for:</b> ${rxn.fact}</div>
+            <div class="r-sec"><b>What you need to make it happen:</b> ${detail.needs}</div>
+            <div class="r-sec"><b>How it happens, step by step:</b><ol class="r-steps">${detail.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
             ${rxn.warn?'<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>':''}
             <div class="r-note">&#9432; Some facts are simplified for the sake of the game.</div>`;
         const canvas = document.getElementById('mol3d');
