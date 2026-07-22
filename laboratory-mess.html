@@ -72,7 +72,8 @@
         .result .r-warn { margin-top:.5rem; color:#b5651d; font-weight:700; font-size:.9rem; }
         .result.norxn { border-left-color:#bbb; }
         .result .r-head { display:flex; align-items:flex-start; gap:.6rem; }
-        .result .mol3d { display:block; margin:.7rem auto; background:radial-gradient(circle at 50% 38%, #f4f9fd, #e6eef6); border-radius:12px; box-shadow:inset 0 0 0 1px #e0e6ec; }
+        .result .mol3d { display:block; margin:.7rem auto 0; background:radial-gradient(circle at 50% 38%, #f4f9fd, #e6eef6); border-radius:12px; box-shadow:inset 0 0 0 1px #e0e6ec; touch-action:none; }
+        .result .mol-hint { text-align:center; font-size:.72rem; color:#9aa0a7; margin-top:.25rem; }
         .result .r-sec { margin-top:.7rem; font-size:.9rem; color:#333; line-height:1.5; }
         .result .r-sec b { color:var(--light-navy); }
         .result .r-steps { margin:.35rem 0 0 1.2rem; }
@@ -559,14 +560,13 @@
         });
         return { atoms:pos, bonds };
     }
-    let mol3dRAF = null;
+    let mol3dRAF = null;   // (kept so the cancel calls elsewhere stay valid)
     function startMol3d(canvas, mol){
-        cancelAnimationFrame(mol3dRAF);
         const ctx = canvas.getContext('2d'), W=canvas.width, H=canvas.height;
-        let ang = 0;
-        function frame(){
+        let ay = 0.5, ax = 0.35;   // Y and X rotation angles (start slightly turned)
+        function draw(){
             ctx.clearRect(0,0,W,H);
-            const cs=Math.cos(ang), sn=Math.sin(ang), tilt=0.4, ct=Math.cos(tilt), st=Math.sin(tilt);
+            const cs=Math.cos(ay), sn=Math.sin(ay), ct=Math.cos(ax), st=Math.sin(ax);
             const pr = mol.atoms.map(a=>{
                 const x=a.x*cs - a.z*sn, z=a.x*sn + a.z*cs, y=a.y;
                 const y2=y*ct - z*st, z2=y*st + z*ct, f=320/(320 + z2*36), scale=34;
@@ -576,16 +576,23 @@
             mol.bonds.forEach(([i,j])=>{ ctx.beginPath(); ctx.moveTo(pr[i].sx,pr[i].sy); ctx.lineTo(pr[j].sx,pr[j].sy); ctx.stroke(); });
             [...pr.keys()].sort((a,b)=>pr[a].z-pr[b].z).forEach(k=>{
                 const p=pr[k], col=CPK[p.el]||'#9aa4ad';
-                const g=ctx.createRadialGradient(p.sx-p.r*0.35, p.sy-p.r*0.35, p.r*0.2, p.sx, p.sy, p.r);
-                g.addColorStop(0,'#ffffff'); g.addColorStop(0.4,col); g.addColorStop(1,col);
+                // smaller, softer highlight so the atom label stays readable
+                const g=ctx.createRadialGradient(p.sx-p.r*0.35, p.sy-p.r*0.35, p.r*0.08, p.sx, p.sy, p.r);
+                g.addColorStop(0,'rgba(255,255,255,0.45)'); g.addColorStop(0.18, col); g.addColorStop(1, col);
                 ctx.beginPath(); ctx.arc(p.sx,p.sy,p.r,0,7); ctx.fillStyle=g; ctx.fill();
                 ctx.fillStyle = (p.el==='H'||p.el==='O'||p.el==='N'||p.el==='F') ? '#1a2332' : '#fff';
                 ctx.font=`bold ${Math.round(p.r*0.9)}px Segoe UI, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
                 ctx.fillText(p.el, p.sx, p.sy);
             });
-            ang += 0.02; mol3dRAF = requestAnimationFrame(frame);
         }
-        frame();
+        // Drag to rotate (no auto-spin). Works with mouse and touch.
+        let dragging=false, lx=0, ly=0;
+        canvas.style.cursor='grab';
+        canvas.addEventListener('pointerdown', e=>{ dragging=true; lx=e.clientX; ly=e.clientY; canvas.style.cursor='grabbing'; try{canvas.setPointerCapture(e.pointerId);}catch(_){} });
+        canvas.addEventListener('pointermove', e=>{ if(!dragging) return; ay += (e.clientX-lx)*0.01; ax += (e.clientY-ly)*0.01; lx=e.clientX; ly=e.clientY; draw(); });
+        const end=()=>{ dragging=false; canvas.style.cursor='grab'; };
+        canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+        draw();
     }
 
     function showResult(rxn, isNew, els){
@@ -597,6 +604,7 @@
                 <div><h3>${rxn.name}${isNew?'':' (already discovered)'}</h3>
                 <div class="r-product">You made: ${rxn.product}</div></div></div>
             <canvas class="mol3d" id="mol3d" width="250" height="175"></canvas>
+            <div class="mol-hint">🖱️ drag the molecule to spin it around</div>
             <div class="r-sec"><b>🔬 What it is &amp; what it's used for:</b> ${rxn.fact}</div>
             <div class="r-sec"><b>⚗️ What you need to make it happen:</b> ${NEEDS[type]}</div>
             <div class="r-sec"><b>🧪 How it happens, step by step:</b><ol class="r-steps">${STEPS[type].map(s=>`<li>${s}</li>`).join('')}</ol></div>
