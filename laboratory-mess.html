@@ -63,6 +63,26 @@
         .beaker-fill::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg, rgba(255,255,255,.28), rgba(255,255,255,0) 45%); }
         .beaker-fill.stir { animation: stir .5s ease-in-out 2; }
         @keyframes stir { 0%,100%{transform:skewX(0)} 25%{transform:skewX(8deg)} 50%{transform:skewX(-8deg)} 75%{transform:skewX(5deg)} }
+        /* slow color-mixing swirl while the stick is stirring */
+        .beaker-fill.stirring { transition: background 1.8s ease, height .45s ease; animation: swirl .7s ease-in-out infinite; }
+        @keyframes swirl { 0%,100%{transform:skewX(0) translateX(0)} 25%{transform:skewX(7deg) translateX(1px)} 50%{transform:skewX(-7deg) translateX(-1px)} 75%{transform:skewX(4deg)} }
+        /* frosted glass pane so the stick looks like it's INSIDE the beaker (behind the glass) */
+        #beakerGlass { position:absolute; left:50%; top:80px; width:75px; height:112px; transform:translateX(-50%); z-index:3; pointer-events:none; opacity:0; transition:opacity .3s;
+            border-radius:5px 5px 10px 10px / 5px 5px 24px 24px;
+            background:linear-gradient(115deg, rgba(255,255,255,.34) 0%, rgba(255,255,255,.05) 32%, rgba(255,255,255,0) 55%, rgba(255,255,255,.18) 100%); }
+        #beakerGlass.show { opacity:1; }
+        /* the glass stirring rod */
+        .stir-stick { position:absolute; z-index:2; width:24px; height:150px; transform-origin:50% 88%; transform:rotate(15deg); cursor:grab; touch-action:none; transition:transform .45s ease, left .45s ease, top .45s ease; }
+        .stir-stick .rod { width:9px; height:100%; margin:0 auto; border-radius:6px; pointer-events:none;
+            background:linear-gradient(90deg, #b9ccdb 0%, #e6f1f8 30%, #ffffff 47%, #dbe8f2 66%, #aec3d4 100%);
+            box-shadow: inset 0 0 2px rgba(255,255,255,.85), inset -1px 0 1px rgba(120,150,175,.4), 0 2px 4px rgba(0,0,0,.22); }
+        .stir-stick.active { animation: stickpulse 1.15s ease-in-out infinite; }
+        @keyframes stickpulse { 0%,100%{ filter:drop-shadow(0 0 0 rgba(110,175,240,0)); } 50%{ filter:drop-shadow(0 0 7px rgba(110,175,240,.9)); } }
+        .stir-stick.grabbed { transition:transform .12s ease; cursor:grabbing; }
+        .stir-stick.inside { z-index:2; }
+        .stir-instruction { display:none; text-align:center; margin:.4rem 0 -.2rem; color:#2d5a85; font-weight:700; font-size:.92rem; }
+        .stir-instruction.show { display:block; animation: instrpulse 1.4s ease-in-out infinite; }
+        @keyframes instrpulse { 0%,100%{opacity:.7} 50%{opacity:1} }
         /* the thing that follows your cursor while dragging */
         .drag-ghost { position:fixed; z-index:300; width:48px; height:48px; transform:translate(-50%,-50%); pointer-events:none; display:flex; align-items:center; justify-content:center; }
         .drag-ghost .lump { width:44px; height:44px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; }
@@ -143,7 +163,7 @@
     </div>
     <header>
         <h1>Laboratory Mess</h1>
-        <p>Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form &mdash; a colored powder, liquid, or gas. Drop in a second one and the beaker stirs and reacts! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
+        <p>Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form &mdash; a colored powder, liquid, or gas. Then pick up the glass stirring stick and stir the beaker &mdash; the mixture blends into its reaction color, and the reaction happens! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
         <p class="disclaimer">&#9432; This is a learning game — some facts are simplified for the sake of the game.</p>
     </header>
     <div class="progress-wrap">
@@ -175,7 +195,8 @@
                     </g>
                     <text x="34" y="82" fill="#2b2b2b" stroke="none" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="600">800 ml</text>
                     <rect x="35" y="88" width="31" height="15" rx="4" stroke-width="2"/>
-                </svg></div></div>
+                </svg></div><div class="beaker-glass" id="beakerGlass"></div><div class="stir-stick" id="stirStick"><div class="rod"></div></div></div>
+                <div class="stir-instruction" id="stirInstruction">Two chemicals are in! Pick up the glass stick and stir the beaker.</div>
                 <div class="controls">
                     <button class="btn btn-mix" id="mixBtn" style="display:none" disabled>Mix!</button>
                     <button class="btn btn-clear" id="clearBtn" disabled>Clear</button>
@@ -504,7 +525,9 @@
     for (let i=0;i<NEEDED;i++){ const d=document.createElement('div'); d.className='dot'; d.textContent=i+1; dotsEl.appendChild(d); }
 
     const beakerFill = document.getElementById('beakerFill');
-    let reacting = false;   // true while a stir+reaction is playing out
+    const stirStick = document.getElementById('stirStick'), beakerGlass = document.getElementById('beakerGlass'), stirInstruction = document.getElementById('stirInstruction');
+    let reacting = false;    // true while a stir+reaction is playing out
+    let awaitingStir = false; // 2 chemicals are in, waiting for the user to stir
 
     /* ----- Physical form of each element (state + real-ish color) -----
        state: 'solid' | 'liquid' | 'gas'. If an element could be several,
@@ -545,14 +568,25 @@
         if(k>=0){ r+=(255-r)*k; g+=(255-g)*k; b+=(255-b)*k; } else { r*=(1+k); g*=(1+k); b*=(1+k); }
         return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')'; }
 
-    function toggleEl(sym){ const i=selected.indexOf(sym); if(i>=0){ selected.splice(i,1); render(); } else addSubstance(sym); }
+    function toggleEl(sym){ if(reacting) return; const i=selected.indexOf(sym); if(i>=0){ selected.splice(i,1); if(selected.length<2) cancelStir(); render(); } else addSubstance(sym); }
     function addSubstance(sym){
         if(reacting) return;
         if(selected.includes(sym)) return;
         if(selected.length>=2) return;
         selected.push(sym);
         render();
-        if(selected.length===2) stirThenReact();
+        if(selected.length===2) promptStir();
+    }
+    // 2 chemicals are in — invite the user to grab the stick and stir
+    function promptStir(){
+        awaitingStir = true;
+        stirStick.classList.add('active');
+        stirInstruction.classList.add('show');
+    }
+    function cancelStir(){
+        awaitingStir = false;
+        stirStick.classList.remove('active');
+        stirInstruction.classList.remove('show');
     }
     function render(){
         // chips
@@ -573,15 +607,127 @@
         }
         clearBtn.disabled = selected.length===0 || reacting;
     }
-    clearBtn.addEventListener('click',()=>{ if(reacting) return; selected=[]; render(); });
+    clearBtn.addEventListener('click',()=>{ if(reacting) return; selected=[]; cancelStir(); render(); });
 
-    /* stir the beaker, then run the reaction */
-    function stirThenReact(){
-        reacting = true;
-        clearBtn.disabled = true;
-        beakerFill.classList.add('stir');
-        setTimeout(()=>{ beakerFill.classList.remove('stir'); doReaction(); }, 1050);
+    /* ===== The color the mixture turns as it reacts ===== */
+    const EFFECT_COLOR = {
+        rust:'#a5531e', flame:'#ff8a2b', smoke:'#d0d5da', explosion:'#eef2f7',
+        light:'#eef2f7', glow:'#8fe36a', magnet:'#434952', bubble:'#e6f0f8', gas:'#e6f0f8'
+    };
+    const COMBO_COLOR = {};
+    [['Fe','O','#a5461e'],['Cu','O','#1f1f1f'],['N','O','#8a5a2b'],['H','O','#dbeafd'],
+     ['C','O','#e7edf1'],['Fe','S','#333333'],['S','O','#eef1e6'],
+     ['Nd','O','#7a3f9e'],['Tb','O','#3ea152'],['Er','O','#e77fa1'],['Eu','O','#d23a3a'],
+     ['Pr','O','#aeb84a'],['U','O','#7fdd52'],['Pm','O','#8fe36a'],['Ce','O','#f0ead2'],
+     ['Nd','Fe','#434952'],['Sm','Co','#434952'],['Gd','O','#eef1f4'],['Dy','O','#eef1f4'],
+     ['Ho','O','#eef1f4'],['La','O','#eef1f4'],['Tm','O','#e9edd6'],['Al','O','#eef2f7'],
+     ['Mg','O','#f4f6f8'],['Ca','O','#f4f6f8']
+    ].forEach(([a,b,c])=>{ COMBO_COLOR[combo(a,b)]=c; });
+    function reactionColor(rxn, els){
+        if(!rxn) return null;
+        const k = combo(els[0].sym, els[1].sym);
+        return COMBO_COLOR[k] || EFFECT_COLOR[rxn.effect] || '#e9eef3';
     }
+
+    /* ===== Stirring stick ===== */
+    let stickState = 'rest';   // 'rest' | 'grabbed' | 'stirring' | 'returning'
+    let stirTimer = null, stickLastX = 0, autoReleased = false;
+
+    function placeStickAtRest(){
+        const s = stage.getBoundingClientRect(), b = beaker.getBoundingClientRect();
+        const restLeft = Math.min((b.right - s.left) + 24, s.width - 34);  // just right of the beaker
+        stirStick.style.left = restLeft + 'px';
+        stirStick.style.top  = ((b.top - s.top) + 20) + 'px';
+        stirStick.style.transform = 'rotate(12deg)';
+        stirStick.classList.remove('grabbed','inside');
+    }
+    function beakerZone(){
+        const b = beaker.getBoundingClientRect(), s = stage.getBoundingClientRect();
+        return { bx:b.left+b.width/2 - s.left, top:b.top - s.top, w:b.width, h:b.height, sLeft:s.left, sTop:s.top };
+    }
+    // is the cursor holding the rod over the beaker mouth?
+    function overBeaker(cx, cy){
+        const b = beaker.getBoundingClientRect();
+        return cx > b.left + b.width*0.18 && cx < b.right - b.width*0.18 && cy > b.top - 50 && cy < b.top + b.height*0.7;
+    }
+    function moveStick(cx, cy, inside){
+        const s = stage.getBoundingClientRect();
+        const hw = stirStick.offsetWidth/2;
+        if(inside){
+            const z = beakerZone();
+            const swing = z.w*0.16;
+            let lx = cx - s.left - hw;
+            lx = Math.max(z.bx - swing, Math.min(z.bx + swing, lx));
+            const rot = Math.max(-16, Math.min(16, (lx - stickLastX)*1.4));
+            stickLastX = lx;
+            stirStick.style.left = lx + 'px';
+            stirStick.style.top  = (z.top - 52) + 'px';   // dips into the body, top pokes out
+            stirStick.style.transform = 'rotate('+rot.toFixed(1)+'deg)';
+        } else {
+            stirStick.style.left = (cx - s.left - hw) + 'px';
+            stirStick.style.top  = (cy - s.top - 40) + 'px';
+            stirStick.style.transform = 'rotate(0deg)';
+        }
+    }
+    function startStirring(){
+        if(stickState==='stirring') return;
+        stickState = 'stirring';
+        reacting = true;
+        awaitingStir = false;
+        clearBtn.disabled = true;
+        stirStick.classList.remove('active');
+        stirInstruction.classList.remove('show');
+        beakerGlass.classList.add('show');
+        beakerFill.classList.add('stirring');
+        // begin mixing toward the reaction's color
+        const els = selected.map(s=>EL[s]);
+        const target = reactionColor(reactionFor(els), els);
+        if(target) beakerFill.style.background = target;
+        // auto-release after ~2.5s of stirring
+        stirTimer = setTimeout(finishStirring, 2500);
+    }
+    function finishStirring(){
+        if(stickState!=='stirring') return;
+        clearTimeout(stirTimer); stirTimer = null;
+        autoReleased = true; movingStick = false;   // take control away from the user
+        stickState = 'returning';
+        beakerFill.classList.remove('stirring');
+        beakerGlass.classList.remove('show');
+        placeStickAtRest();                 // glides back to its resting spot
+        setTimeout(()=>{ stickState='rest'; doReaction(); }, 480);
+    }
+    // grabbing / dragging the stick
+    let movingStick = false;
+    stirStick.addEventListener('pointerdown', (e)=>{
+        if(reacting || !awaitingStir) return;
+        e.preventDefault();
+        movingStick = true; autoReleased = false; stickState = 'grabbed';
+        stirStick.classList.add('grabbed'); stirStick.classList.remove('active');
+        try{ stirStick.setPointerCapture(e.pointerId); }catch(_){}
+        moveStick(e.clientX, e.clientY, false);
+    });
+    stirStick.addEventListener('pointermove', (e)=>{
+        if(!movingStick) return;
+        const inside = overBeaker(e.clientX, e.clientY);
+        moveStick(e.clientX, e.clientY, inside);
+        if(inside && stickState==='grabbed') startStirring();
+    });
+    const stickUp = (e)=>{
+        if(!movingStick) return;
+        movingStick = false;
+        stirStick.classList.remove('grabbed');
+        try{ stirStick.releasePointerCapture(e.pointerId); }catch(_){}
+        // If they're already stirring, let the timer finish it — the stick keeps
+        // stirring on its own and pops out automatically. If they let go before it
+        // ever reached the beaker, just send it back and keep inviting them to stir.
+        if(stickState==='grabbed'){ stickState='rest'; placeStickAtRest(); promptStir(); }
+    };
+    stirStick.addEventListener('pointerup', stickUp);
+    stirStick.addEventListener('pointercancel', stickUp);
+    // put the stick at its resting spot to start, and whenever the layout changes while idle
+    placeStickAtRest();
+    requestAnimationFrame(placeStickAtRest);
+    window.addEventListener('resize', ()=>{ if(stickState==='rest' && !movingStick) placeStickAtRest(); });
     function doReaction(){
         const els = selected.map(s=>EL[s]);
         const hasNoble = els.some(e=>e.cat==='noble');
@@ -595,8 +741,9 @@
             if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
         } else if(hasNoble){ showInert(); }
         else showNoReaction();
-        // clear the beaker for the next mix
-        selected=[]; reacting=false; render();
+        // clear the beaker for the next mix, and reset the stick
+        selected=[]; reacting=false; awaitingStir=false; stickState='rest';
+        cancelStir(); placeStickAtRest(); render();
     }
 
     /* ===== Drag and drop ===== */
