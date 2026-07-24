@@ -24,6 +24,29 @@
         .topbar { background:var(--baby-blue); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(126,200,227,.15); }
         .topbar a { color:var(--dark-text); text-decoration:none; font-weight:700; }
         .topbar a:hover { opacity:.7; }
+        /* ===== Slide-out spiral notepad ===== */
+        html, body { overflow-x:hidden; }
+        .notepad-drawer { --pad-w:340px; position:fixed; top:82px; right:0; z-index:140; display:flex; align-items:center;
+            transition: transform .5s cubic-bezier(.4,0,.2,1); }
+        .notepad-drawer.closed { transform: translateX(var(--pad-w)); }
+        .notepad-tab { flex:0 0 auto; margin-right:-2px; width:30px; height:78px; position:relative; z-index:2;
+            background:#5a4327; border:3px solid #4a3520; border-right:none; border-radius:12px 0 0 12px;
+            display:flex; align-items:center; justify-content:center; cursor:pointer; color:#f3e9d6;
+            box-shadow:-4px 4px 9px rgba(0,0,0,.22); transition:background .2s; }
+        .notepad-tab:hover { background:#6b5230; }
+        .notepad-tab svg { width:15px; height:15px; transition:transform .45s; }
+        .notepad-drawer.closed .notepad-tab svg { transform:rotate(180deg); }
+        .notepad { --pad-w:340px; width:var(--pad-w); height:78vh; max-height:780px; position:relative;
+            background:#fffdf6; border:6px solid #4a3520; border-radius:16px; overflow:hidden;
+            box-shadow:-8px 10px 26px rgba(0,0,0,.22); }
+        .np-lines { position:absolute; left:16px; right:16px; top:48px; bottom:18px;
+            background: repeating-linear-gradient(to bottom, transparent 0 29px, #d9cbac 29px 30px); }
+        .np-spiral { position:absolute; top:-8px; left:0; right:0; height:40px; display:flex; justify-content:space-evenly; align-items:flex-start; }
+        .np-coil { width:13px; height:32px; border-radius:7px; position:relative;
+            background:linear-gradient(180deg,#6b5230 0%, #4a3520 55%, #35240f 100%);
+            box-shadow: inset 0 -2px 3px rgba(0,0,0,.45), inset 0 2px 2px rgba(255,255,255,.3); }
+        .np-coil::after { content:''; position:absolute; left:3px; right:3px; top:22px; height:7px; border-radius:50%;
+            background:#2b1d0f; box-shadow:0 1px 1px rgba(255,255,255,.15); }
         header { text-align:center; padding:1.8rem 1rem 0.4rem; }
         header h1 { font-family:'Sweet Hipster',cursive; font-size:4rem; color:var(--light-navy); line-height:1.1; }
         header p { color:#555; max-width:660px; margin:0.3rem auto 0; }
@@ -161,6 +184,22 @@
         <a href="index.html">&larr; Back to my website</a>
         <a href="index.html#home">Sofia Shao</a>
     </div>
+
+    <!-- Slide-out spiral notepad (open on first load; click the tab to close/open) -->
+    <div class="notepad-drawer" id="notepadDrawer">
+        <div class="notepad-tab" id="notepadTab" title="Show or hide the notepad">
+            <svg viewBox="0 0 24 24"><path d="M8 4 L16 12 L8 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="notepad" id="notepad">
+            <div class="np-spiral">
+                <span class="np-coil"></span><span class="np-coil"></span><span class="np-coil"></span>
+                <span class="np-coil"></span><span class="np-coil"></span><span class="np-coil"></span>
+                <span class="np-coil"></span><span class="np-coil"></span><span class="np-coil"></span>
+            </div>
+            <div class="np-lines"></div>
+        </div>
+    </div>
+
     <header>
         <h1>ChemiMix</h1>
         <p>Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form &mdash; a colored powder, liquid, or gas. Then pick up the glass stirring stick and stir the beaker &mdash; the mixture blends into its reaction color, and the reaction happens! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
@@ -814,6 +853,11 @@
     placeStickAtRest();
     requestAnimationFrame(placeStickAtRest);
     window.addEventListener('resize', ()=>{ if(stickState==='rest' && !movingStick) placeStickAtRest(); });
+
+    /* ===== Notepad drawer: open on load; tab slides it closed/open ===== */
+    const notepadDrawer = document.getElementById('notepadDrawer'), notepadTab = document.getElementById('notepadTab');
+    notepadTab.addEventListener('click', ()=> notepadDrawer.classList.toggle('closed'));
+
     function doReaction(){
         try {
             const els = selected.map(s=>EL[s]);
