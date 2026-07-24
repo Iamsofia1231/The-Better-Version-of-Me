@@ -37,16 +37,13 @@
         .notepad-tab svg { width:15px; height:15px; transition:transform .45s; }
         .notepad-drawer.closed .notepad-tab svg { transform:rotate(180deg); }
         .notepad { --pad-w:340px; width:var(--pad-w); height:78vh; max-height:780px; position:relative;
-            background:#fffdf6; border:6px solid #4a3520; border-radius:16px; overflow:hidden;
+            background:#fffdf6; border:6px solid #4a3520; border-radius:16px;
             box-shadow:-8px 10px 26px rgba(0,0,0,.22); }
+        .np-lines { border-radius:0 0 10px 10px; }
         .np-lines { position:absolute; left:16px; right:16px; top:48px; bottom:18px;
             background: repeating-linear-gradient(to bottom, transparent 0 29px, #d9cbac 29px 30px); }
-        .np-spiral { position:absolute; top:-8px; left:0; right:0; height:40px; display:flex; justify-content:space-evenly; align-items:flex-start; }
-        .np-coil { width:13px; height:32px; border-radius:7px; position:relative;
-            background:linear-gradient(180deg,#6b5230 0%, #4a3520 55%, #35240f 100%);
-            box-shadow: inset 0 -2px 3px rgba(0,0,0,.45), inset 0 2px 2px rgba(255,255,255,.3); }
-        .np-coil::after { content:''; position:absolute; left:3px; right:3px; top:22px; height:7px; border-radius:50%;
-            background:#2b1d0f; box-shadow:0 1px 1px rgba(255,255,255,.15); }
+        .np-spiral { position:absolute; top:-16px; left:6px; right:6px; height:52px; z-index:3; pointer-events:none; }
+        .np-spiral svg { width:100%; height:100%; overflow:visible; display:block; }
         header { text-align:center; padding:1.8rem 1rem 0.4rem; }
         header h1 { font-family:'Sweet Hipster',cursive; font-size:4rem; color:var(--light-navy); line-height:1.1; }
         header p { color:#555; max-width:660px; margin:0.3rem auto 0; }
@@ -191,11 +188,7 @@
             <svg viewBox="0 0 24 24"><path d="M8 4 L16 12 L8 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div class="notepad" id="notepad">
-            <div class="np-spiral">
-                <span class="np-coil"></span><span class="np-coil"></span><span class="np-coil"></span>
-                <span class="np-coil"></span><span class="np-coil"></span><span class="np-coil"></span>
-                <span class="np-coil"></span><span class="np-coil"></span><span class="np-coil"></span>
-            </div>
+            <div class="np-spiral" id="npSpiral"></div>
             <div class="np-lines"></div>
         </div>
     </div>
@@ -857,6 +850,21 @@
     /* ===== Notepad drawer: open on load; tab slides it closed/open ===== */
     const notepadDrawer = document.getElementById('notepadDrawer'), notepadTab = document.getElementById('notepadTab');
     notepadTab.addEventListener('click', ()=> notepadDrawer.classList.toggle('closed'));
+    // draw the spiral binding as open loops arching over the top edge, each with a punched hole
+    (function buildSpiral(){
+        const s = document.getElementById('npSpiral');
+        const N = 10, W = 328, m = 20, span = (W - 2*m) / (N - 1);
+        let g = '';
+        for (let i = 0; i < N; i++) {
+            const cx = m + i*span;
+            // the wire loop (open arch, tilted slightly to the right)
+            g += `<path d="M ${cx-7} 34 C ${cx-12} 5, ${cx+9} 2, ${cx+8} 31" fill="none" stroke="#4a3520" stroke-width="5.2" stroke-linecap="round"/>`;
+            // the punched hole where the wire goes through the paper
+            g += `<ellipse cx="${cx+1}" cy="38" rx="5" ry="4" fill="#fffdf6" stroke="#4a3520" stroke-width="2.4"/>`;
+            g += `<ellipse cx="${cx+1}" cy="38.4" rx="2.2" ry="1.7" fill="#3a2814"/>`;
+        }
+        s.innerHTML = `<svg viewBox="0 0 ${W} 50">${g}</svg>`;
+    })();
 
     function doReaction(){
         try {
