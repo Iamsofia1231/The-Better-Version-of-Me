@@ -36,9 +36,28 @@
         .notepad-tab:hover { background:#6b5230; }
         .notepad-tab svg { width:15px; height:15px; transition:transform .45s; }
         .notepad-drawer.closed .notepad-tab svg { transform:rotate(180deg); }
-        .notepad { --pad-w:340px; width:var(--pad-w); height:534px; max-height:86vh; position:relative;
-            filter: drop-shadow(-6px 8px 11px rgba(0,0,0,.2)); }
-        .notepad svg { width:100%; height:100%; display:block; overflow:visible; }
+        .notepad { --pad-w:340px; width:var(--pad-w); height:534px; position:relative; perspective:1700px;
+            filter: drop-shadow(-6px 8px 11px rgba(0,0,0,.18)); }
+        .np-shadow { position:absolute; left:11px; top:54px; width:326px; height:474px; border-radius:22px; background:#3d2b17; }
+        .np-sheet { position:absolute; left:5px; top:48px; width:326px; height:474px; border:2.6px solid #3d2b17; border-radius:22px;
+            background:#fffdf9; backface-visibility:hidden; }
+        .np-sheet .np-ruled { position:absolute; left:16px; right:16px; top:26px; bottom:16px;
+            background: repeating-linear-gradient(to bottom, transparent 0 14px, #7c6748 14px 15.2px); }
+        .np-base { z-index:1; }
+        .np-top  { z-index:2; transform-origin:50% 0; transition: transform .72s cubic-bezier(.45,0,.2,1); will-change:transform; }
+        .np-top.flip-fwd { transform: rotateX(-170deg); }
+        .np-spiral2 { position:absolute; left:0; top:0; width:100%; height:72px; z-index:4; pointer-events:none; }
+        .np-spiral2 svg { width:100%; height:100%; overflow:visible; display:block; }
+        /* corner peel hints */
+        .np-curl { position:absolute; bottom:12px; width:44px; height:44px; z-index:6; cursor:pointer; }
+        .np-curl.br { right:9px; }
+        .np-curl.bl { left:5px; display:none; }
+        .np-curl .fold { position:absolute; bottom:0; width:22px; height:22px; transition:width .22s ease, height .22s ease, box-shadow .22s ease;
+            box-shadow:-2px -2px 5px rgba(0,0,0,.22); }
+        .np-curl.br .fold { right:0; border-radius:0 0 19px 0; background:linear-gradient(135deg,#f3ead4 0%,#e2d5b6 55%,#cbbd9a 100%); }
+        .np-curl.bl .fold { left:0;  border-radius:0 0 0 19px; background:linear-gradient(225deg,#f3ead4 0%,#e2d5b6 55%,#cbbd9a 100%); }
+        .np-curl:hover .fold { width:48px; height:48px; box-shadow:-4px -4px 9px rgba(0,0,0,.28); }
+        .np-flipping .np-curl { pointer-events:none; }
         header { text-align:center; padding:1.8rem 1rem 0.4rem; }
         header h1 { font-family:'Sweet Hipster',cursive; font-size:4rem; color:var(--light-navy); line-height:1.1; }
         header p { color:#555; max-width:660px; margin:0.3rem auto 0; }
@@ -842,36 +861,68 @@
     /* ===== Notepad drawer: open on load; tab slides it closed/open ===== */
     const notepadDrawer = document.getElementById('notepadDrawer'), notepadTab = document.getElementById('notepadTab');
     notepadTab.addEventListener('click', ()=> notepadDrawer.classList.toggle('closed'));
-    // draw the whole notepad as a vector to match the reference picture (transparent background)
+    // Build the notepad in layers: shadow + two lined pages (one flippable) + spiral binding
+    // on top + corner peel hints. Pages are blank for now and effectively infinite.
+    let npPageIndex = 0, npFlipping = false;
+    const npEl = document.getElementById('notepad');
     (function buildNotepad(){
-        const INK = '#3d2b17';                 // dark-brown outline color
-        const W = 300, H = 470;
-        const px = 20, py = 60, pw = W - 40, ph = 394, r = 28;   // paper rect (top edge low so loops sit above it)
-        const nLoops = 10, m = px + 24, span = (pw - 48) / (nLoops - 1);
-        const holeY = py + 3;                  // dots sit right at the top edge, at the loop bases
+        const INK = '#3d2b17';
+        const W = 340;                          // spiral svg matches the notepad width
+        const nLoops = 10, m = 34, span = (W - 68) / (nLoops - 1), holeY = 52;
         let loops = '', holes = '';
         for (let i = 0; i < nLoops; i++) {
-            const cx = m + i*span;
-            // a tall, narrow loop that arches over the top edge and leans slightly left,
-            // its two legs nearly meeting at the hole (like the picture's spiral coil)
-            loops += `<path d="M ${cx-2} ${holeY} C ${cx-16} 10, ${cx+11} 6, ${cx+2} ${holeY}" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
+            const cx = m + i*span;              // tall narrow loops leaning slightly, holes at the base
+            loops += `<path d="M ${cx-2} ${holeY} C ${cx-16} 8, ${cx+11} 6, ${cx+2} ${holeY}" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
             holes += `<circle cx="${cx}" cy="${holeY}" r="4.5" fill="${INK}"/>`;
         }
-        let lines = '';
-        const lx1 = px + 16, lx2 = px + pw - 16;
-        for (let y = py + 34; y < py + ph - 16; y += 13.2) {
-            lines += `<line x1="${lx1}" y1="${y.toFixed(1)}" x2="${lx2}" y2="${y.toFixed(1)}" stroke="${INK}" stroke-width="1.3"/>`;
-        }
-        // order: shadow, paper, then loops+holes ON TOP so the wire ends show on the paper
-        document.getElementById('notepad').innerHTML =
-            `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
-                <rect x="${px+6}" y="${py+6}" width="${pw}" height="${ph}" rx="${r}" fill="${INK}"/>
-                <rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="${r}" fill="#fffdf9" stroke="${INK}" stroke-width="2.6"/>
-                ${lines}
-                ${loops}
-                ${holes}
-            </svg>`;
+        npEl.innerHTML =
+            `<div class="np-shadow"></div>
+             <div class="np-sheet np-base" id="npBase"><div class="np-ruled"></div></div>
+             <div class="np-sheet np-top"  id="npTop"><div class="np-ruled"></div></div>
+             <div class="np-spiral2"><svg viewBox="0 0 ${W} 72">${loops}${holes}</svg></div>
+             <div class="np-curl br" id="npCurlBR"><div class="fold"></div></div>
+             <div class="np-curl bl" id="npCurlBL"><div class="fold"></div></div>`;
     })();
+
+    // page flipping
+    let npTop = document.getElementById('npTop'), npBase = document.getElementById('npBase');
+    const npCurlBR = document.getElementById('npCurlBR'), npCurlBL = document.getElementById('npCurlBL');
+    function npUpdateCurls(){ npCurlBL.style.display = npPageIndex > 0 ? 'block' : 'none'; }
+
+    function npFlipForward(){
+        if (npFlipping) return; npFlipping = true; npEl.classList.add('np-flipping');
+        npTop.classList.add('flip-fwd');                       // current page flips up over the top
+        npTop.addEventListener('transitionend', function done(){
+            npTop.removeEventListener('transitionend', done);
+            // the flipped page becomes the new page underneath; the old base becomes the new top
+            npTop.style.transition = 'none';
+            npTop.classList.remove('flip-fwd', 'np-top'); npTop.classList.add('np-base');
+            npBase.classList.remove('np-base'); npBase.classList.add('np-top');
+            void npTop.offsetWidth;                            // commit the reset with no animation
+            npTop.style.transition = '';
+            const tmp = npTop; npTop = npBase; npBase = tmp;   // swap roles
+            npPageIndex++; npFlipping = false;
+            npEl.classList.remove('np-flipping'); npUpdateCurls();
+        }, { once:true });
+    }
+    function npFlipBack(){
+        if (npFlipping || npPageIndex === 0) return; npFlipping = true; npEl.classList.add('np-flipping');
+        // bring a page down from the back: make the base the top, start it flipped, then animate to flat
+        npBase.classList.remove('np-base'); npBase.classList.add('np-top');
+        npTop.classList.remove('np-top'); npTop.classList.add('np-base');
+        const tmp = npTop; npTop = npBase; npBase = tmp;       // npTop is now the incoming page
+        npTop.style.transition = 'none'; npTop.classList.add('flip-fwd');
+        void npTop.offsetWidth;
+        npTop.style.transition = ''; npTop.classList.remove('flip-fwd');   // animate back to front
+        npTop.addEventListener('transitionend', function done(){
+            npTop.removeEventListener('transitionend', done);
+            npPageIndex--; npFlipping = false;
+            npEl.classList.remove('np-flipping'); npUpdateCurls();
+        }, { once:true });
+    }
+    npCurlBR.addEventListener('click', npFlipForward);
+    npCurlBL.addEventListener('click', npFlipBack);
+    npUpdateCurls();
 
     function doReaction(){
         try {
