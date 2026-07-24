@@ -815,21 +815,27 @@
     requestAnimationFrame(placeStickAtRest);
     window.addEventListener('resize', ()=>{ if(stickState==='rest' && !movingStick) placeStickAtRest(); });
     function doReaction(){
-        const els = selected.map(s=>EL[s]);
-        const hasNoble = els.some(e=>e.cat==='noble');
-        const rxn = reactionFor(els);
-        if(rxn){
-            runEffect(rxn.effect, rxn.emoji);
-            const k = combo(els[0].sym, els[1].sym);
-            const isNew = !discoveredKeys.has(k);
-            if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
-            showResult(rxn, isNew, els);
-            if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
-        } else if(hasNoble){ showInert(); }
-        else showNoReaction();
-        // clear the beaker for the next mix, and reset the stick
-        selected=[]; reacting=false; awaitingStir=false; stickState='rest';
-        cancelStir(); placeStickAtRest(); render();
+        try {
+            const els = selected.map(s=>EL[s]);
+            const hasNoble = els.some(e=>e.cat==='noble');
+            const rxn = reactionFor(els);
+            if(rxn){
+                runEffect(rxn.effect, rxn.emoji);
+                const k = combo(els[0].sym, els[1].sym);
+                const isNew = !discoveredKeys.has(k);
+                if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
+                showResult(rxn, isNew, els);
+                if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
+            } else if(hasNoble){ showInert(); }
+            else showNoReaction();
+        } catch(err){
+            console.error('reaction display error:', err);
+        } finally {
+            // ALWAYS clear the beaker and reset the stick, even if showing the result
+            // hit an error — otherwise the game would freeze with reacting stuck on.
+            selected=[]; reacting=false; awaitingStir=false; stickState='rest';
+            cancelStir(); placeStickAtRest(); render();
+        }
     }
 
     /* ===== Drag and drop ===== */
@@ -960,8 +966,11 @@
     // Detailed, element-aware "conditions" and "step by step" for each reaction.
     function reactionDetail(type, els){
         const isMetal = e => metalCats.includes(e.cat);
-        const metal = els.find(isMetal), hal = els.find(e=>e.cat==='halogen');
+        const hal = els.find(e=>e.cat==='halogen');
         const O = els.find(e=>e.sym==='O'), H = els.find(e=>e.sym==='H');
+        // "metal" for the step text: a real metal if there is one, otherwise a metalloid
+        // (or just the non-oxygen / non-halogen element) so this is never undefined
+        const metal = els.find(isMetal) || els.find(e => e!==O && e!==H && e.cat!=='halogen') || els[0];
         const a = els[0], b = els[1] || els[0];
         const fuel = O ? (els.find(e=>e!==O) || a) : a;
         const halide = hal ? HALIDE[hal.sym] : 'halide';
