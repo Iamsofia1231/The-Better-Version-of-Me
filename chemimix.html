@@ -41,16 +41,18 @@
         .np-shadow { position:absolute; left:11px; top:54px; width:326px; height:474px; border-radius:22px; background:#000000; }
         .np-sheet { position:absolute; left:5px; top:48px; width:326px; height:474px; border:2.6px solid #3d2b17; border-radius:22px;
             background:#fffdf9; backface-visibility:hidden; }
-        .np-sheet .np-ruled { position:absolute; left:16px; right:16px; top:26px; bottom:16px;
-            background: repeating-linear-gradient(to bottom, transparent 0 14px, #7c6748 14px 15.2px); }
-        /* the written reaction log, sitting on the ruled lines */
-        .np-content { position:absolute; left:18px; right:17px; top:23px; bottom:14px;
-            font-family:'Segoe UI', system-ui, sans-serif; font-size:9px; line-height:15.2px; color:#4a3a22; }
-        .np-list { list-style:none; margin:0; padding:0; max-height:calc(100% - 58px); overflow:hidden; }
-        .np-list li { padding-left:12px; text-indent:-12px; }
+        .np-sheet .np-ruled { display:none; }
+        /* the written reaction log — the ruled lines live on the SAME element as the text,
+           anchored to the same grid, so every line of text sits right on a line */
+        .np-content { position:absolute; left:18px; right:17px; top:26px; bottom:14px; padding:0;
+            font-family:'Segoe UI', system-ui, sans-serif; font-size:9px; line-height:15.2px; color:#000;
+            -webkit-text-stroke:0.25px #000;
+            background: repeating-linear-gradient(to bottom, transparent 0 10.6px, #8a7458 10.6px 11.3px, transparent 11.3px 15.2px); }
+        .np-list { list-style:none; margin:0; padding:0; max-height:calc(100% - 56px); overflow:hidden; }
+        .np-list li { margin:0; padding-left:12px; text-indent:-12px; }
         .np-list li::before { content:'\2013\00a0\00a0'; }   /* dash bullet */
-        .np-learn { color:#2d5a85; text-decoration:underline; white-space:nowrap; }
-        .np-counter { position:absolute; left:0; right:0; bottom:30px; text-align:center; font-weight:700; color:#4a3a22; }
+        .np-learn { color:#1b3f63; text-decoration:underline; white-space:nowrap; -webkit-text-stroke:0; }
+        .np-counter { position:absolute; left:0; right:0; bottom:39px; text-align:center; font-weight:700; color:#000; line-height:15.2px; }
         .np-base { z-index:1; }
         .np-top  { z-index:2; transform-origin:50% 0; transition: transform .72s cubic-bezier(.45,0,.2,1); will-change:transform; }
         .np-top.flip-fwd { transform: rotateX(-170deg); }
