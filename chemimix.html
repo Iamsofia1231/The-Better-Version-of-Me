@@ -45,7 +45,7 @@
         /* the written reaction log — the ruled lines live on the SAME element as the text,
            anchored to the same grid, so every line of text sits right on a line */
         .np-content { position:absolute; left:18px; right:17px; top:26px; bottom:14px; padding:0;
-            font-family:'Segoe UI', system-ui, sans-serif; font-size:10.5px; line-height:17px; color:#000;
+            font-family:'Segoe UI', system-ui, sans-serif; font-size:12px; line-height:17px; color:#000;
             -webkit-text-stroke:0.25px #000;
             background: repeating-linear-gradient(to bottom, transparent 0 12.3px, #8a7458 12.3px 13.0px, transparent 13.0px 17px); }
         .np-list { list-style:none; margin:0; padding:0; max-height:calc(100% - 60px); overflow:hidden; }
@@ -879,7 +879,7 @@
     // on top + corner peel hints. Pages hold the reaction log and are effectively infinite.
     let npPageIndex = 0, npFlipping = false;
     const NP_TOTAL = 473;              // total reactions the game can make (specific + generic)
-    const NP_PER_PAGE = 9;             // reaction entries per page
+    const NP_PER_PAGE = 8;             // reaction entries per page
     const npEl = document.getElementById('notepad');
     // the notepad's OWN persistent log — never cleared, even when the quiz restarts the game
     const npEntries = [], npSeen = new Set();
