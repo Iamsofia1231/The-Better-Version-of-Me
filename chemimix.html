@@ -1370,31 +1370,71 @@
     function pairLabel(syms){ return syms.map(s=>EL[s].name).join(' + '); }
     function pairKey(syms){ return syms.slice().sort().join('+'); }  // order-independent key
     function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    // split a product string into its name and formula:
+    // "Cesium tennesside, CsTs" -> {name:'Cesium tennesside', formula:'CsTs'}
+    // "Neodymium Magnet (Nd₂Fe₁₄B)" -> {name:'Neodymium Magnet', formula:'Nd₂Fe₁₄B'}
+    function parseProduct(product){
+        let name = product, formula = '';
+        const par = product.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+        if (par && /[A-Za-z]/.test(par[2]) && /[₀-₉0-9]/.test(par[2])) { name = par[1].trim(); formula = par[2].trim(); }
+        else { const c = product.lastIndexOf(','); if (c >= 0) { name = product.slice(0,c).trim(); formula = product.slice(c+1).trim(); } }
+        return { name, formula };
+    }
+    // short "what kind of thing is it" answer, from the reaction type
+    const CAT_ANSWER = { salt:'a Salt', oxide:'an Oxide', acidgas:'an Acid Gas', combustion:'a Gas',
+        burn:'a Compound', synthesis:'a Compound', alloy:'an Alloy', combine:'a Compound' };
+    function categoryLabel(els){ return CAT_ANSWER[typeOf(els)] || 'a Compound'; }
+    function pickDistractors(pool, correctKey, n){
+        const seen = new Set([correctKey]), out = [];
+        for (const o of shuffle(pool.slice())) { if (out.length >= n) break; if (!o.key || seen.has(o.key)) continue; seen.add(o.key); out.push(o); }
+        return out;
+    }
+    // build one quiz question of a given kind for a discovered reaction d
+    function buildQuestion(d, kind, pools){
+        const a = EL[d.els[0]], b = EL[d.els[1]], pp = parseProduct(d.rxn.product), rxnName = d.rxn.name.replace(/!$/,'');
+        if ((kind === 'symbol' || kind === 'what') && !pp.formula && kind === 'symbol') kind = 'pair';
+        let text, correct, pool;
+        if (kind === 'product') {
+            text = `What can you make from <strong>${a.name} (${a.sym})</strong> and <strong>${b.name} (${b.sym})</strong>?`;
+            correct = { key:d.rxn.product, label:`${d.rxn.product} (${rxnName})` };
+            pool = pools.productPool;
+        } else if (kind === 'what') {
+            text = `What kind of substance is <strong>${pp.name}</strong>?`;
+            const cat = categoryLabel([a,b]);
+            correct = { key:cat, label:cat };
+            pool = pools.categoryPool;
+        } else if (kind === 'symbol') {
+            text = `What is the chemical formula for <strong>${pp.name}</strong>?`;
+            correct = { key:pp.formula, label:pp.formula };
+            pool = pools.symbolPool;
+        } else { // 'pair'
+            text = `Which two elements did you combine to make <strong>${d.rxn.product}</strong>?`;
+            correct = { key:pairKey(d.els), label:pairLabel(d.els) };
+            pool = pools.pairPool;
+        }
+        return { d, text, correctKey:correct.key, options:shuffle([correct, ...pickDistractors(pool, correct.key, 3)]) };
+    }
     function startQuiz(){
         const chosen = discovered.slice(0,NEEDED);
-        // Pool of possible answers as {key,label}. The KEY ignores order, so a pair
-        // never shows up twice (e.g. "Hydrogen + Oxygen" AND "Oxygen + Hydrogen").
-        const poolAll = SPECIFIC_LIST.map(r=>({key:pairKey(r.els), label:pairLabel(r.els)}))
-            .concat(discovered.map(d=>({key:pairKey(d.els), label:pairLabel(d.els)})));
-        quizQuestions = chosen.map(d=>{
-            const correctKey = pairKey(d.els);
-            const correct = { key:correctKey, label:pairLabel(d.els) };
-            const seen = new Set([correctKey]);           // block the correct pair (either order) from also being a wrong option
-            const distractors = [];
-            for(const o of shuffle(poolAll.slice())){
-                if(distractors.length>=3) break;
-                if(seen.has(o.key)) continue;             // no duplicate pairs
-                seen.add(o.key); distractors.push(o);
-            }
-            return { d, correctKey, options:shuffle([correct, ...distractors]) };
-        });
+        // answer pools drawn from every named reaction plus everything discovered
+        const refs = SPECIFIC_LIST.concat(discovered.map(d=>d.rxn));
+        const pools = {
+            pairPool: SPECIFIC_LIST.map(r=>({key:pairKey(r.els), label:pairLabel(r.els)}))
+                .concat(discovered.map(d=>({key:pairKey(d.els), label:pairLabel(d.els)}))),
+            productPool: refs.map(r=>({key:r.product, label:`${r.product} (${r.name.replace(/!$/,'')})`})),
+            symbolPool: refs.map(r=>{ const f=parseProduct(r.product).formula; return {key:f, label:f}; }).filter(o=>o.key),
+            categoryPool: ['a Salt','an Oxide','an Acid Gas','a Gas','a Compound','an Alloy','a Metal','a Crystal'].map(c=>({key:c,label:c}))
+        };
+        // mix the question kinds so the quiz isn't all one type (all four appear, then extras)
+        const kinds = shuffle(['pair','product','what','symbol']).concat(shuffle(['pair','product','what','symbol']));
+        quizQuestions = chosen.map((d,i)=> buildQuestion(d, kinds[i], pools));
         quizIndex=0; quizScore=0;
         notepadDrawer.classList.add('closed', 'np-locked');   // retract the notepad and disable its tab
         overlay.classList.add('show'); renderQuestion();
     }
     function renderQuestion(){ const q=quizQuestions[quizIndex];
         quizCard.innerHTML=`<div class="q-count">Question ${quizIndex+1} of ${quizQuestions.length}</div>
-            <div class="q-text">${q.d.rxn.emoji} Which two elements did you combine to make <strong>${q.d.rxn.product}</strong>?</div>
+            <div class="q-text">${q.text}</div>
             <div class="q-options" id="qOptions"></div><div class="q-fact" id="qFact"></div>`;
         const wrap=document.getElementById('qOptions');
         q.options.forEach(opt=>{ const btn=document.createElement('button'); btn.className='q-opt'; btn.textContent=opt.label; btn.dataset.key=opt.key; btn.addEventListener('click',()=>answer(btn,q)); wrap.appendChild(btn); });
