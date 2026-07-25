@@ -54,6 +54,7 @@
         .np-list li::before { content:'\2013\00a0\00a0'; }   /* dash bullet */
         .np-learn { color:#1b3f63; text-decoration:underline; white-space:nowrap; -webkit-text-stroke:0; }
         .np-counter { position:absolute; left:0; right:0; bottom:43px; text-align:center; font-weight:700; color:#000; line-height:17px; }
+        .np-note { font-style:italic; color:#3a2c18; line-height:17px; -webkit-text-stroke:0; }
         .np-base { z-index:1; }
         .np-top  { z-index:2; transform-origin:50% 0; transition: transform .72s cubic-bezier(.45,0,.2,1); will-change:transform; }
         .np-top.flip-fwd { transform: rotateX(-170deg); }
@@ -889,7 +890,8 @@
     // on top + corner peel hints. Pages hold the reaction log and are effectively infinite.
     let npPageIndex = 0, npFlipping = false;
     const NP_TOTAL = 473;              // total reactions the game can make (specific + generic)
-    const NP_PER_PAGE = 8;             // reaction entries per page
+    const NP_PER_PAGE = 6;             // reaction entries per page
+    let npNotePage = -1;               // page currently showing the "page used" note
     const npEl = document.getElementById('notepad');
     // the notepad's OWN persistent log — never cleared, even when the quiz restarts the game
     const npEntries = [], npSeen = new Set();
@@ -935,8 +937,10 @@
         let lis = '';
         for (const it of items)
             lis += `<li>${npEsc(it.text)} <a class="np-learn" href="${it.url}" target="_blank" rel="noopener noreferrer">Learn More</a></li>`;
+        const note = (page === npNotePage)
+            ? `<div class="np-note">(Page used, new reactions will be recorded on next page)</div>` : '';
         content.innerHTML =
-            `<ul class="np-list">${lis}</ul>` +
+            `<ul class="np-list">${lis}</ul>` + note +
             `<div class="np-counter">(${npEntries.length} out of ${NP_TOTAL} reactions discovered)</div>`;
     }
     function npRefresh(){ npRenderPage(npTop, npPageIndex); npRenderPage(npBase, npPageIndex + 1); }
@@ -967,6 +971,18 @@
         const url = 'https://www.google.com/search?q=' + encodeURIComponent(term);
         npEntries.push({ key, text, url });
         npSave();
+        // If this discovery just filled the page you're on, note it and flip to the next page after 1s
+        const newIndex = npEntries.length - 1;
+        if (newIndex > 0 && newIndex % NP_PER_PAGE === 0 && !npFlipping) {
+            const fullPage = newIndex / NP_PER_PAGE - 1;
+            if (npPageIndex === fullPage) {
+                npNotePage = fullPage;
+                npFlipping = true;               // hold flips during the pause
+                npRefresh();                     // show the note under the last reaction
+                setTimeout(() => { npNotePage = -1; npFlipping = false; npFlipForward(); }, 1000);
+                return;
+            }
+        }
         npRefresh();
     }
 
