@@ -52,11 +52,18 @@
         .np-curl { position:absolute; bottom:12px; width:44px; height:44px; z-index:6; cursor:pointer; }
         .np-curl.br { right:9px; }
         .np-curl.bl { left:5px; display:none; }
-        .np-curl .fold { position:absolute; bottom:0; width:22px; height:22px; transition:width .22s ease, height .22s ease, box-shadow .22s ease;
-            box-shadow:-2px -2px 5px rgba(0,0,0,.22); }
-        .np-curl.br .fold { right:0; border-radius:0 0 19px 0; background:linear-gradient(135deg,#f3ead4 0%,#e2d5b6 55%,#cbbd9a 100%); }
-        .np-curl.bl .fold { left:0;  border-radius:0 0 0 19px; background:linear-gradient(225deg,#f3ead4 0%,#e2d5b6 55%,#cbbd9a 100%); }
-        .np-curl:hover .fold { width:48px; height:48px; box-shadow:-4px -4px 9px rgba(0,0,0,.28); }
+        /* the curl is invisible (zero size) until the corner is hovered, then it rolls up */
+        .np-curl .fold { position:absolute; bottom:0; width:0; height:0; pointer-events:none;
+            transition: width .22s ease, height .22s ease; }
+        .np-curl.br .fold { right:0; border-radius:0 0 22px 0;
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
+            background: linear-gradient(135deg, transparent 0 45%, #9c7b47 45% 50%, #4a3520 50% 76%, #241708 100%);
+            filter: drop-shadow(-3px -3px 4px rgba(0,0,0,.45)); }
+        .np-curl.bl .fold { left:0; border-radius:0 0 0 22px;
+            clip-path: polygon(0 0, 0 100%, 100% 100%);
+            background: linear-gradient(225deg, transparent 0 45%, #9c7b47 45% 50%, #4a3520 50% 76%, #241708 100%);
+            filter: drop-shadow(3px -3px 4px rgba(0,0,0,.45)); }
+        .np-curl:hover .fold { width:52px; height:52px; }
         .np-flipping .np-curl { pointer-events:none; }
         header { text-align:center; padding:1.8rem 1rem 0.4rem; }
         header h1 { font-family:'Sweet Hipster',cursive; font-size:4rem; color:var(--light-navy); line-height:1.1; }
