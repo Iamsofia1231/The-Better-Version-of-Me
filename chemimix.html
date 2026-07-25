@@ -929,6 +929,21 @@
     }
     function npRefresh(){ npRenderPage(npTop, npPageIndex); npRenderPage(npBase, npPageIndex + 1); }
 
+    // ---- save/restore the log in the browser so it survives refreshes ----
+    const NP_STORE_KEY = 'chemimix_reactions_v1';
+    function npSave(){ try { localStorage.setItem(NP_STORE_KEY, JSON.stringify(npEntries)); } catch(_){} }
+    function npLoad(){
+        try {
+            const arr = JSON.parse(localStorage.getItem(NP_STORE_KEY) || '[]');
+            if (!Array.isArray(arr)) return;
+            for (const it of arr){
+                if (it && it.key && it.text && it.url && !npSeen.has(it.key)){
+                    npSeen.add(it.key); npEntries.push({ key:it.key, text:it.text, url:it.url });
+                }
+            }
+        } catch(_){}
+    }
+
     // add a discovered reaction to the persistent log (deduped, so it never double-counts)
     function npLogReaction(rxn, els){
         const key = combo(els[0].sym, els[1].sym);
@@ -938,7 +953,8 @@
         const text = `${p} (${rxn.name.replace(/!$/,'')}), made from ${a.name} (${a.sym}) and ${b.name} (${b.sym}).`;
         const term = (p.split(',')[0] || p).replace(/\s*\(.*?\)\s*/g,' ').trim();
         const url = 'https://www.google.com/search?q=' + encodeURIComponent(term);
-        npEntries.push({ text, url });
+        npEntries.push({ key, text, url });
+        npSave();
         npRefresh();
     }
 
@@ -976,6 +992,7 @@
     }
     npCurlBR.addEventListener('click', npFlipForward);
     npCurlBL.addEventListener('click', npFlipBack);
+    npLoad();                                   // restore any saved discoveries from a previous visit
     npRenderPage(npTop, 0); npRenderPage(npBase, 1); npUpdateCurls();
 
     function doReaction(){
