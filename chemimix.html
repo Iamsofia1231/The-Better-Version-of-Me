@@ -143,7 +143,16 @@
             clip-path: polygon(43% 6%, 50% 3%, 57% 6%, 64% 26%, 74% 50%, 86% 76%, 98% 100%, 2% 100%, 14% 76%, 26% 50%, 36% 26%); }
         .grain { position:absolute; border-radius:50%; box-shadow: inset -1px -1.5px 1.5px rgba(0,0,0,.4), inset 1px 1px 1px rgba(255,255,255,.5), 0 1px 1px rgba(0,0,0,.2); }
         .heap-label { position:absolute; left:0; right:0; top:46%; text-align:center; font-weight:800; font-size:.72rem; pointer-events:none; text-shadow:0 1px 2px rgba(0,0,0,.4), 0 0 2px rgba(255,255,255,.35); }
-        .sub-liquid { border-radius:50% 50% 50% 50% / 58% 58% 46% 46%; box-shadow: inset 0 -6px 9px rgba(0,0,0,.25), inset 0 6px 9px rgba(255,255,255,.55); }
+        /* liquids look like a glossy, wet, slightly wobbling droplet */
+        .sub-liquid { border-radius:46% 54% 48% 52% / 58% 60% 40% 42%;
+            background-image:
+                radial-gradient(42% 30% at 32% 26%, rgba(255,255,255,.85), rgba(255,255,255,0) 62%),
+                radial-gradient(120% 120% at 50% 30%, rgba(255,255,255,.14), rgba(0,0,0,.18) 92%);
+            box-shadow: inset 0 -8px 11px rgba(0,0,0,.32), inset 0 5px 9px rgba(255,255,255,.4), 0 3px 7px rgba(0,0,0,.28);
+            animation: liquidWobble 1.6s ease-in-out infinite; }
+        @keyframes liquidWobble {
+            0%,100%{ border-radius:46% 54% 48% 52% / 58% 60% 40% 42%; }
+            50%    { border-radius:53% 47% 52% 48% / 54% 62% 42% 45%; } }
         .sub-gas { border-radius:50%; filter:blur(3px); opacity:.55; }
         .el { touch-action:none; cursor:grab; }
         .el:active { cursor:grabbing; }
