@@ -1080,22 +1080,37 @@
         document.body.appendChild(g);
         return g;
     }
+    let dragLastX = 0, dragLastY = 0, autoScrollRAF = null;
     function beginDrag(sym, e){
         if(reacting) return;
         if(selected.length>=2 || selected.includes(sym)) return;
         dragging = true; dragSym = sym;
         ghost = createGhost(sym);
+        dragLastX = e.clientX; dragLastY = e.clientY;
         moveGhost(e.clientX, e.clientY);
         window.addEventListener('pointermove', dragMove);
         window.addEventListener('pointerup', dragUp);
+        if(!autoScrollRAF) autoScrollRAF = requestAnimationFrame(autoScrollTick);
     }
     function moveGhost(x,y){ if(ghost){ ghost.style.left=x+'px'; ghost.style.top=y+'px'; } }
-    function dragMove(e){ if(!dragging) return; moveGhost(e.clientX, e.clientY);
+    function dragMove(e){ if(!dragging) return; dragLastX = e.clientX; dragLastY = e.clientY;
+        moveGhost(e.clientX, e.clientY);
         beaker.classList.toggle('drop-hot', isOverBeaker(e.clientX, e.clientY)); }
+    // while dragging, if the cursor nears the top/bottom of the screen, auto-scroll that way
+    function autoScrollTick(){
+        if(!dragging){ autoScrollRAF = null; return; }
+        const EDGE = 110, MAX = 20, h = window.innerHeight;
+        let dy = 0;
+        if(dragLastY > h - EDGE) dy =  MAX * Math.min(1, (dragLastY - (h - EDGE)) / EDGE);
+        else if(dragLastY < EDGE) dy = -MAX * Math.min(1, (EDGE - dragLastY) / EDGE);
+        if(dy){ window.scrollBy(0, dy); beaker.classList.toggle('drop-hot', isOverBeaker(dragLastX, dragLastY)); }
+        autoScrollRAF = requestAnimationFrame(autoScrollTick);
+    }
     function isOverBeaker(x,y){ const r=beaker.getBoundingClientRect(); return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom; }
     function dragUp(e){
         window.removeEventListener('pointermove', dragMove);
         window.removeEventListener('pointerup', dragUp);
+        if(autoScrollRAF){ cancelAnimationFrame(autoScrollRAF); autoScrollRAF = null; }
         const over = isOverBeaker(e.clientX, e.clientY);
         if(ghost){ ghost.remove(); ghost=null; }
         beaker.classList.remove('drop-hot');
