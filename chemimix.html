@@ -682,6 +682,7 @@
     const stirStick = document.getElementById('stirStick'), beakerGlass = document.getElementById('beakerGlass'), stirInstruction = document.getElementById('stirInstruction');
     let reacting = false;    // true while a stir+reaction is playing out
     let awaitingStir = false; // 2 chemicals are in, waiting for the user to stir
+    let reacted = false;      // a reaction finished — chips stay until the user clears them
 
     /* ----- Physical form of each element (state + real-ish color) -----
        state: 'solid' | 'liquid' | 'gas'. If an element could be several,
@@ -722,9 +723,9 @@
         if(k>=0){ r+=(255-r)*k; g+=(255-g)*k; b+=(255-b)*k; } else { r*=(1+k); g*=(1+k); b*=(1+k); }
         return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')'; }
 
-    function toggleEl(sym){ if(reacting) return; const i=selected.indexOf(sym); if(i>=0){ selected.splice(i,1); if(selected.length<2) cancelStir(); render(); } else addSubstance(sym); }
+    function toggleEl(sym){ if(reacting) return; const i=selected.indexOf(sym); if(i>=0){ selected.splice(i,1); reacted=false; if(selected.length<2) cancelStir(); render(); } else addSubstance(sym); }
     function addSubstance(sym){
-        if(reacting) return;
+        if(reacting || reacted) return;          // must clear the finished reaction first
         if(selected.includes(sym)) return;
         if(selected.length>=2) return;
         selected.push(sym);
@@ -749,8 +750,9 @@
             c.innerHTML=`${sym} <button title="remove">&times;</button>`; c.querySelector('button').addEventListener('click',()=>toggleEl(sym)); chipsEl.appendChild(c); }); }
         // tile highlight
         document.querySelectorAll('.el').forEach(b=>{ if(b.dataset.sym) b.classList.toggle('selected', selected.includes(b.dataset.sym)); });
-        // beaker liquid level + color
-        if(!selected.length){ beakerFill.style.height='0'; }
+        // beaker liquid level + color (leave the beaker showing the result while 'reacted')
+        if(reacted){ /* keep the reaction-colored beaker until the user clears */ }
+        else if(!selected.length){ beakerFill.style.height='0'; }
         else {
             const subs = selected.map(getSubstance);
             const col = subs.length===1 ? subs[0].c : blend(subs[0].c, subs[1].c);
@@ -761,7 +763,7 @@
         }
         clearBtn.disabled = selected.length===0 || reacting;
     }
-    clearBtn.addEventListener('click',()=>{ if(reacting) return; selected=[]; cancelStir(); render(); });
+    clearBtn.addEventListener('click',()=>{ if(reacting) return; selected=[]; reacted=false; cancelStir(); render(); });
 
     /* ===== The color the mixture turns as it reacts ===== */
     const EFFECT_COLOR = {
@@ -1041,9 +1043,10 @@
         } catch(err){
             console.error('reaction display error:', err);
         } finally {
-            // ALWAYS clear the beaker and reset the stick, even if showing the result
-            // hit an error — otherwise the game would freeze with reacting stuck on.
-            selected=[]; reacting=false; awaitingStir=false; stickState='rest';
+            // Keep the two element chips above the beaker after the reaction — the user
+            // must clear them before mixing again. Always reset the stick/flags so the
+            // game can't freeze even if showing the result hit an error.
+            reacting=false; awaitingStir=false; reacted=true; stickState='rest';
             cancelStir(); placeStickAtRest(); render();
         }
     }
@@ -1476,7 +1479,7 @@
         quizCard.innerHTML=`<h2>Quiz Complete</h2><div class="score-big">${quizScore} / 5</div><p>${msg}</p>
             <button class="btn btn-mix" id="restartBtn" style="margin-top:1.2rem">Play again</button>`;
         document.getElementById('restartBtn').addEventListener('click',restart); }
-    function restart(){ overlay.classList.remove('show'); notepadDrawer.classList.remove('np-locked'); discovered.length=0; discoveredKeys.clear(); selected=[]; updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML=''; }
+    function restart(){ overlay.classList.remove('show'); notepadDrawer.classList.remove('np-locked'); discovered.length=0; discoveredKeys.clear(); selected=[]; reacted=false; updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML=''; }
     </script>
 </body>
 </html>
