@@ -34,6 +34,7 @@
             display:flex; align-items:center; justify-content:center; cursor:pointer; color:#2d5a85;
             box-shadow:-4px 4px 9px rgba(0,0,0,.22); transition:background .2s; }
         .notepad-tab:hover { background:#c3ddf1; }
+        .notepad-drawer.np-locked .notepad-tab { opacity:.4; cursor:not-allowed; pointer-events:none; }
         .notepad-tab svg { width:15px; height:15px; transition:transform .45s; }
         .notepad-drawer.closed .notepad-tab svg { transform:rotate(180deg); }
         .notepad { --pad-w:340px; width:var(--pad-w); height:534px; position:relative; perspective:1700px;
@@ -180,9 +181,9 @@
         .flash { position:absolute; inset:0; background:#fff; z-index:4; pointer-events:none; animation:flash .7s ease-out forwards; }
         @keyframes flash { from{opacity:1} to{opacity:0} }
         .emoji-burst { position:absolute; z-index:3; font-size:2rem; pointer-events:none; }
-        .overlay { position:fixed; inset:0; background:rgba(26,35,50,.6); display:none; align-items:center; justify-content:center; z-index:50; padding:1rem; }
+        .overlay { position:fixed; inset:0; background:#ffffff; display:none; align-items:center; justify-content:center; z-index:200; padding:1rem; }
         .overlay.show { display:flex; }
-        .quiz-card { background:#fff; border-radius:20px; padding:2rem; max-width:560px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; }
+        .quiz-card { background:#fff; border:2px solid var(--baby-blue); border-radius:20px; padding:2rem; max-width:560px; width:100%; box-shadow:0 14px 40px rgba(120,180,220,.28); text-align:center; }
         .quiz-card h2 { font-family:'Sweet Hipster',cursive; font-size:2.6rem; color:var(--light-navy); }
         .q-count { color:#888; font-weight:700; margin-bottom:.5rem; }
         .q-text { font-size:1.12rem; margin-bottom:1.2rem; }
@@ -874,7 +875,7 @@
 
     /* ===== Notepad drawer: open on load; tab slides it closed/open ===== */
     const notepadDrawer = document.getElementById('notepadDrawer'), notepadTab = document.getElementById('notepadTab');
-    notepadTab.addEventListener('click', ()=> notepadDrawer.classList.toggle('closed'));
+    notepadTab.addEventListener('click', ()=>{ if(notepadDrawer.classList.contains('np-locked')) return; notepadDrawer.classList.toggle('closed'); });
     // Build the notepad in layers: shadow + two lined pages (one flippable) + spiral binding
     // on top + corner peel hints. Pages hold the reaction log and are effectively infinite.
     let npPageIndex = 0, npFlipping = false;
@@ -1387,7 +1388,9 @@
             }
             return { d, correctKey, options:shuffle([correct, ...distractors]) };
         });
-        quizIndex=0; quizScore=0; overlay.classList.add('show'); renderQuestion();
+        quizIndex=0; quizScore=0;
+        notepadDrawer.classList.add('closed', 'np-locked');   // retract the notepad and disable its tab
+        overlay.classList.add('show'); renderQuestion();
     }
     function renderQuestion(){ const q=quizQuestions[quizIndex];
         quizCard.innerHTML=`<div class="q-count">Question ${quizIndex+1} of ${quizQuestions.length}</div>
@@ -1408,7 +1411,7 @@
         quizCard.innerHTML=`<h2>Quiz Complete</h2><div class="score-big">${quizScore} / 5</div><p>${msg}</p>
             <button class="btn btn-mix" id="restartBtn" style="margin-top:1.2rem">Play again</button>`;
         document.getElementById('restartBtn').addEventListener('click',restart); }
-    function restart(){ overlay.classList.remove('show'); discovered.length=0; discoveredKeys.clear(); selected=[]; updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML=''; }
+    function restart(){ overlay.classList.remove('show'); notepadDrawer.classList.remove('np-locked'); discovered.length=0; discoveredKeys.clear(); selected=[]; updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML=''; }
     </script>
 </body>
 </html>
