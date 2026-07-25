@@ -30,15 +30,15 @@
             transition: transform .5s cubic-bezier(.4,0,.2,1); }
         .notepad-drawer.closed { transform: translateX(var(--pad-w)); }
         .notepad-tab { flex:0 0 auto; margin-right:-2px; width:30px; height:78px; position:relative; z-index:2;
-            background:#5a4327; border:3px solid #4a3520; border-right:none; border-radius:12px 0 0 12px;
-            display:flex; align-items:center; justify-content:center; cursor:pointer; color:#f3e9d6;
+            background:#d5e7f6; border:3px solid #9cc3de; border-right:none; border-radius:12px 0 0 12px;
+            display:flex; align-items:center; justify-content:center; cursor:pointer; color:#2d5a85;
             box-shadow:-4px 4px 9px rgba(0,0,0,.22); transition:background .2s; }
-        .notepad-tab:hover { background:#6b5230; }
+        .notepad-tab:hover { background:#c3ddf1; }
         .notepad-tab svg { width:15px; height:15px; transition:transform .45s; }
         .notepad-drawer.closed .notepad-tab svg { transform:rotate(180deg); }
         .notepad { --pad-w:340px; width:var(--pad-w); height:534px; position:relative; perspective:1700px;
             filter: drop-shadow(-6px 8px 11px rgba(0,0,0,.18)); }
-        .np-shadow { position:absolute; left:11px; top:54px; width:326px; height:474px; border-radius:22px; background:#3d2b17; }
+        .np-shadow { position:absolute; left:11px; top:54px; width:326px; height:474px; border-radius:22px; background:#000000; }
         .np-sheet { position:absolute; left:5px; top:48px; width:326px; height:474px; border:2.6px solid #3d2b17; border-radius:22px;
             background:#fffdf9; backface-visibility:hidden; }
         .np-sheet .np-ruled { position:absolute; left:16px; right:16px; top:26px; bottom:16px;
@@ -870,14 +870,14 @@
     let npPageIndex = 0, npFlipping = false;
     const npEl = document.getElementById('notepad');
     (function buildNotepad(){
-        const INK = '#3d2b17';
+        const WIRE = '#d5e7f6', HOLE = '#93bcd9';   // spiral binding in the Nonmetal category color
         const W = 340;                          // spiral svg matches the notepad width
         const nLoops = 10, m = 34, span = (W - 68) / (nLoops - 1), holeY = 52;
         let loops = '', holes = '';
         for (let i = 0; i < nLoops; i++) {
             const cx = m + i*span;              // tall narrow loops leaning slightly, holes at the base
-            loops += `<path d="M ${cx-2} ${holeY} C ${cx-16} 8, ${cx+11} 6, ${cx+2} ${holeY}" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
-            holes += `<circle cx="${cx}" cy="${holeY}" r="4.5" fill="${INK}"/>`;
+            loops += `<path d="M ${cx-2} ${holeY} C ${cx-16} 8, ${cx+11} 6, ${cx+2} ${holeY}" fill="none" stroke="${WIRE}" stroke-width="4" stroke-linecap="round"/>`;
+            holes += `<circle cx="${cx}" cy="${holeY}" r="4.5" fill="${HOLE}"/>`;
         }
         // a realistic rolled page-corner curl: light paper underside with soft shading
         const curlSVG =
