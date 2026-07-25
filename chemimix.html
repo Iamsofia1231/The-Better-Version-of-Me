@@ -43,6 +43,14 @@
             background:#fffdf9; backface-visibility:hidden; }
         .np-sheet .np-ruled { position:absolute; left:16px; right:16px; top:26px; bottom:16px;
             background: repeating-linear-gradient(to bottom, transparent 0 14px, #7c6748 14px 15.2px); }
+        /* the written reaction log, sitting on the ruled lines */
+        .np-content { position:absolute; left:18px; right:17px; top:23px; bottom:14px;
+            font-family:'Segoe UI', system-ui, sans-serif; font-size:9px; line-height:15.2px; color:#4a3a22; }
+        .np-list { list-style:none; margin:0; padding:0; max-height:calc(100% - 58px); overflow:hidden; }
+        .np-list li { padding-left:12px; text-indent:-12px; }
+        .np-list li::before { content:'\2013\00a0\00a0'; }   /* dash bullet */
+        .np-learn { color:#2d5a85; text-decoration:underline; white-space:nowrap; }
+        .np-counter { position:absolute; left:0; right:0; bottom:30px; text-align:center; font-weight:700; color:#4a3a22; }
         .np-base { z-index:1; }
         .np-top  { z-index:2; transform-origin:50% 0; transition: transform .72s cubic-bezier(.45,0,.2,1); will-change:transform; }
         .np-top.flip-fwd { transform: rotateX(-170deg); }
@@ -866,9 +874,13 @@
     const notepadDrawer = document.getElementById('notepadDrawer'), notepadTab = document.getElementById('notepadTab');
     notepadTab.addEventListener('click', ()=> notepadDrawer.classList.toggle('closed'));
     // Build the notepad in layers: shadow + two lined pages (one flippable) + spiral binding
-    // on top + corner peel hints. Pages are blank for now and effectively infinite.
+    // on top + corner peel hints. Pages hold the reaction log and are effectively infinite.
     let npPageIndex = 0, npFlipping = false;
+    const NP_TOTAL = 473;              // total reactions the game can make (specific + generic)
+    const NP_PER_PAGE = 9;             // reaction entries per page
     const npEl = document.getElementById('notepad');
+    // the notepad's OWN persistent log — never cleared, even when the quiz restarts the game
+    const npEntries = [], npSeen = new Set();
     (function buildNotepad(){
         const WIRE = '#000000', HOLE = '#000000';   // spiral binding in pure black
         const W = 340;                          // spiral svg matches the notepad width
@@ -892,52 +904,79 @@
             </svg>`;
         npEl.innerHTML =
             `<div class="np-shadow"></div>
-             <div class="np-sheet np-base" id="npBase"><div class="np-ruled"></div></div>
-             <div class="np-sheet np-top"  id="npTop"><div class="np-ruled"></div></div>
+             <div class="np-sheet np-base" id="npBase"><div class="np-ruled"></div><div class="np-content"></div></div>
+             <div class="np-sheet np-top"  id="npTop"><div class="np-ruled"></div><div class="np-content"></div></div>
              <div class="np-spiral2"><svg viewBox="0 0 ${W} 72">${loops}${holes}</svg></div>
              <div class="np-curl br" id="npCurlBR"><div class="fold">${curlSVG}</div></div>
              <div class="np-curl bl" id="npCurlBL"><div class="fold">${curlSVG}</div></div>`;
     })();
 
-    // page flipping
     let npTop = document.getElementById('npTop'), npBase = document.getElementById('npBase');
     const npCurlBR = document.getElementById('npCurlBR'), npCurlBL = document.getElementById('npCurlBL');
     function npUpdateCurls(){ npCurlBL.style.display = npPageIndex > 0 ? 'block' : 'none'; }
+    function npEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // render one page's bullets + the always-present counter on the 3rd-to-last line
+    function npRenderPage(sheet, page){
+        const content = sheet.querySelector('.np-content');
+        const items = npEntries.slice(page*NP_PER_PAGE, page*NP_PER_PAGE + NP_PER_PAGE);
+        let lis = '';
+        for (const it of items)
+            lis += `<li>${npEsc(it.text)} <a class="np-learn" href="${it.url}" target="_blank" rel="noopener noreferrer">Learn More</a></li>`;
+        content.innerHTML =
+            `<ul class="np-list">${lis}</ul>` +
+            `<div class="np-counter">(${npEntries.length} out of ${NP_TOTAL} reactions discovered)</div>`;
+    }
+    function npRefresh(){ npRenderPage(npTop, npPageIndex); npRenderPage(npBase, npPageIndex + 1); }
+
+    // add a discovered reaction to the persistent log (deduped, so it never double-counts)
+    function npLogReaction(rxn, els){
+        const key = combo(els[0].sym, els[1].sym);
+        if (npSeen.has(key)) return;
+        npSeen.add(key);
+        const p = rxn.product, a = els[0], b = els[1];
+        const text = `${p} (${rxn.name.replace(/!$/,'')}), made from ${a.name} (${a.sym}) and ${b.name} (${b.sym}).`;
+        const term = (p.split(',')[0] || p).replace(/\s*\(.*?\)\s*/g,' ').trim();
+        const url = 'https://www.google.com/search?q=' + encodeURIComponent(term);
+        npEntries.push({ text, url });
+        npRefresh();
+    }
 
     function npFlipForward(){
         if (npFlipping) return; npFlipping = true; npEl.classList.add('np-flipping');
+        npRenderPage(npBase, npPageIndex + 1);                 // the page revealed underneath
         npTop.classList.add('flip-fwd');                       // current page flips up over the top
         npTop.addEventListener('transitionend', function done(){
             npTop.removeEventListener('transitionend', done);
-            // the flipped page becomes the new page underneath; the old base becomes the new top
             npTop.style.transition = 'none';
             npTop.classList.remove('flip-fwd', 'np-top'); npTop.classList.add('np-base');
             npBase.classList.remove('np-base'); npBase.classList.add('np-top');
-            void npTop.offsetWidth;                            // commit the reset with no animation
-            npTop.style.transition = '';
+            void npTop.offsetWidth; npTop.style.transition = '';
             const tmp = npTop; npTop = npBase; npBase = tmp;   // swap roles
-            npPageIndex++; npFlipping = false;
-            npEl.classList.remove('np-flipping'); npUpdateCurls();
+            npPageIndex++;
+            npRenderPage(npBase, npPageIndex + 1);             // prep the next reveal
+            npFlipping = false; npEl.classList.remove('np-flipping'); npUpdateCurls();
         }, { once:true });
     }
     function npFlipBack(){
         if (npFlipping || npPageIndex === 0) return; npFlipping = true; npEl.classList.add('np-flipping');
-        // bring a page down from the back: make the base the top, start it flipped, then animate to flat
         npBase.classList.remove('np-base'); npBase.classList.add('np-top');
         npTop.classList.remove('np-top'); npTop.classList.add('np-base');
         const tmp = npTop; npTop = npBase; npBase = tmp;       // npTop is now the incoming page
+        npRenderPage(npTop, npPageIndex - 1);                  // the previous page, coming down from the back
         npTop.style.transition = 'none'; npTop.classList.add('flip-fwd');
         void npTop.offsetWidth;
-        npTop.style.transition = ''; npTop.classList.remove('flip-fwd');   // animate back to front
+        npTop.style.transition = ''; npTop.classList.remove('flip-fwd');
         npTop.addEventListener('transitionend', function done(){
             npTop.removeEventListener('transitionend', done);
-            npPageIndex--; npFlipping = false;
-            npEl.classList.remove('np-flipping'); npUpdateCurls();
+            npPageIndex--;
+            npRenderPage(npBase, npPageIndex + 1);
+            npFlipping = false; npEl.classList.remove('np-flipping'); npUpdateCurls();
         }, { once:true });
     }
     npCurlBR.addEventListener('click', npFlipForward);
     npCurlBL.addEventListener('click', npFlipBack);
-    npUpdateCurls();
+    npRenderPage(npTop, 0); npRenderPage(npBase, 1); npUpdateCurls();
 
     function doReaction(){
         try {
@@ -949,6 +988,7 @@
                 const k = combo(els[0].sym, els[1].sym);
                 const isNew = !discoveredKeys.has(k);
                 if(isNew){ discoveredKeys.add(k); discovered.push({rxn, els:selected.slice()}); updateProgress(); }
+                npLogReaction(rxn, els);        // persistent notepad log (survives quiz restarts)
                 showResult(rxn, isNew, els);
                 if(discovered.length>=NEEDED) setTimeout(startQuiz,1600);
             } else if(hasNoble){ showInert(); }
