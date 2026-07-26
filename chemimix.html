@@ -24,6 +24,11 @@
         .topbar { background:var(--baby-blue); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(126,200,227,.15); }
         .topbar a { color:var(--dark-text); text-decoration:none; font-weight:700; }
         .topbar a:hover { opacity:.7; }
+        /* language picker (top-right corner) */
+        .lang-picker { position:fixed; top:12px; right:14px; z-index:210; display:flex; align-items:center; gap:.35rem;
+            background:#fff; border:2px solid var(--baby-blue); border-radius:22px; padding:.28rem .6rem .28rem .55rem; box-shadow:0 4px 14px rgba(120,180,220,.3); }
+        .lang-picker .lang-globe { font-size:1rem; line-height:1; }
+        .lang-picker select { border:none; background:transparent; font-family:inherit; font-weight:700; color:var(--light-navy); font-size:.92rem; cursor:pointer; outline:none; padding-right:.1rem; }
         /* ===== Slide-out spiral notepad ===== */
         html, body { overflow-x:hidden; }
         .notepad-drawer { --pad-w:340px; position:fixed; top:82px; right:0; z-index:140; display:flex; align-items:center;
@@ -216,8 +221,18 @@
     </style>
 </head>
 <body>
+    <div class="lang-picker">
+        <span class="lang-globe">🌐</span>
+        <select id="langSelect" aria-label="Choose your language">
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+        </select>
+    </div>
     <div class="topbar">
-        <a href="index.html">&larr; Back to my website</a>
+        <a href="index.html" data-i18n="back">&larr; Back to my website</a>
         <a href="index.html#home">Sofia Shao</a>
     </div>
 
@@ -231,22 +246,22 @@
 
     <header>
         <h1>ChemiMix</h1>
-        <p>Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form &mdash; a colored powder, liquid, or gas. Then pick up the glass stirring stick and stir the beaker &mdash; the mixture blends into its reaction color, and the reaction happens! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
-        <p class="disclaimer">&#9432; This is a learning game — some facts are simplified for the sake of the game.</p>
+        <p data-i18n="intro">Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form &mdash; a colored powder, liquid, or gas. Then pick up the glass stirring stick and stir the beaker &mdash; the mixture blends into its reaction color, and the reaction happens! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!</p>
+        <p class="disclaimer" data-i18n="disclaimer">&#9432; This is a learning game — some facts are simplified for the sake of the game.</p>
     </header>
     <div class="progress-wrap">
-        <div class="progress-label">Reactions discovered: <span id="count">0</span> / 5</div>
+        <div class="progress-label"><span data-i18n="discovered">Reactions discovered:</span> <span id="count">0</span> / 5</div>
         <div class="progress-dots" id="dots"></div>
     </div>
     <div class="wrap">
         <div class="panel">
-            <h2>The Periodic Table</h2>
+            <h2 data-i18n="ptable">The Periodic Table</h2>
             <div class="ptable-scroll"><div class="ptable" id="ptable"></div></div>
             <div class="legend" id="legend"></div>
         </div>
         <div class="cols">
             <div class="panel mix-area">
-                <h2>Your Beaker</h2>
+                <h2 data-i18n="beaker">Your Beaker</h2>
                 <div class="selected-chips" id="chips"><span class="hint">Drag 2 elements into the beaker</span></div>
                 <div id="stage"><div class="beaker" id="beaker"><div class="beaker-fill" id="beakerFill"></div><svg viewBox="0 0 130 158" fill="none" stroke="#2b2b2b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 34 C17 30 22 32 27 33 L103 33 C108 33 111 31 113 29"/>
@@ -264,16 +279,16 @@
                     <text x="34" y="82" fill="#2b2b2b" stroke="none" font-family="Segoe UI, sans-serif" font-size="10.5" font-weight="600">800 ml</text>
                     <rect x="35" y="88" width="31" height="15" rx="4" stroke-width="2"/>
                 </svg></div><div class="beaker-glass" id="beakerGlass"></div><div class="stir-stick" id="stirStick"><div class="rod"></div></div></div>
-                <div class="stir-instruction" id="stirInstruction">Two chemicals are in! Pick up the glass stick and stir the beaker.</div>
+                <div class="stir-instruction" id="stirInstruction" data-i18n="stir">Two chemicals are in! Pick up the glass stick and stir the beaker.</div>
                 <div class="controls">
                     <button class="btn btn-mix" id="mixBtn" style="display:none" disabled>Mix!</button>
-                    <button class="btn btn-clear" id="clearBtn" disabled>Clear</button>
+                    <button class="btn btn-clear" id="clearBtn" data-i18n="clear" disabled>Clear</button>
                 </div>
                 <div class="result" id="result"></div>
             </div>
             <div class="panel guide">
-                <h2>Reaction Guide</h2>
-                <div class="g-intro">General patterns — but each exact pair makes its own specific product!</div>
+                <h2 data-i18n="guide">Reaction Guide</h2>
+                <div class="g-intro" data-i18n="guideIntro">General patterns — but each exact pair makes its own specific product!</div>
                 <ul id="guideList"></ul>
             </div>
         </div>
@@ -290,6 +305,97 @@
         halogen:{name:'Halogen',color:'var(--c-halogen)'}, noble:{name:'Noble gas',color:'var(--c-noble)'},
         lanth:{name:'Lanthanide',color:'var(--c-lanth)'}, actin:{name:'Actinide',color:'var(--c-actin)'},
     };
+
+    /* ===== LANGUAGES ===== */
+    const I18N = {
+        en: {
+            back:`← Back to my website`,
+            intro:`Drag 2 elements from the periodic table into the beaker! Each element drops in as its real physical form — a colored powder, liquid, or gas. Then pick up the glass stirring stick and stir the beaker — the mixture blends into its reaction color, and the reaction happens! Each exact pair makes a different real product with its own facts. Use the Reaction Guide for the general patterns. Discover 5 reactions to unlock the quiz!`,
+            disclaimer:`ⓘ This is a learning game — some facts are simplified for the sake of the game.`,
+            discovered:`Reactions discovered:`, ptable:`The Periodic Table`, beaker:`Your Beaker`,
+            dragHint:`Drag 2 elements into the beaker`, stir:`Two chemicals are in! Pick up the glass stick and stir the beaker.`,
+            clear:`Clear`, guide:`Reaction Guide`, guideIntro:`General patterns — but each exact pair makes its own specific product!`, guideInert:`never reacts (they're inert!)`,
+            cat_alkali:`Alkali metal`, cat_alkaline:`Alkaline earth metal`, cat_transition:`Transition metal`, cat_postt:`Post-transition metal`, cat_metalloid:`Metalloid`, cat_nonmetal:`Nonmetal`, cat_halogen:`Halogen`, cat_noble:`Noble gas`, cat_lanth:`Lanthanide`, cat_actin:`Actinide`,
+            r_youmade:`You made:`, r_dragmol:`drag the molecule to spin it around`, r_whatis:`What it is & what it's used for:`, r_needs:`What you need to make it happen:`, r_steps:`How it happens, step by step:`, r_warn:`Real and dangerous — never try this at home!`, r_note:`Some facts are simplified for the sake of the game.`, r_already:`(already discovered)`,
+            nr_noble_h:`No reaction — it's a noble gas!`, nr_noble_b:`Noble gases (helium, neon, argon...) already have a full set of electrons, so they almost never react. That's why they're called "inert"!`, nr_h:`No reaction`, nr_b:`These don't react under normal conditions. Check the Reaction Guide for combos that DO react — in real chemistry, most random mixtures do nothing!`,
+            tip_atomic:`Atomic number:`, tip_shells:`Electron shells:`, tip_funfact:`Fun fact:`,
+            q_count:`Question {i} of {n}`, q_pair:`Which two elements did you combine to make {x}?`, q_product:`What can you make from {a} and {b}?`, q_what:`What kind of substance is {x}?`, q_symbol:`What is the chemical formula for {x}?`,
+            quiz_complete:`Quiz Complete`, play_again:`Play again`, next_q:`Next question`, see_score:`See my score`, score_perfect:`Perfect score — you're a real chemist! 🧪`, score_good:`Great memory! 👏`, score_try:`Good try — play again to remember more!`,
+            ans_salt:`a Salt`, ans_oxide:`an Oxide`, ans_acidgas:`an Acid Gas`, ans_gas:`a Gas`, ans_compound:`a Compound`, ans_alloy:`an Alloy`, ans_metal:`a Metal`, ans_crystal:`a Crystal`,
+            np_counter:`({n} out of {total} reactions discovered)`, np_learn:`Learn More`, np_pageused:`(Page used, new reactions will be recorded on next page)`
+        },
+        zh: {
+            back:`← 返回我的网站`,
+            intro:`从元素周期表里拖动 2 个元素到烧杯中！每个元素都会以它真实的物理形态出现——有颜色的粉末、液体或气体。然后拿起玻璃搅拌棒搅拌烧杯——混合物会变成它反应后的颜色，反应就发生了！每一对特定的元素都会生成不同的真实产物，各有自己的知识。用"反应指南"了解一般规律。发现 5 个反应即可解锁测验！`,
+            disclaimer:`ⓘ 这是一个学习游戏——为了游戏效果，有些知识做了简化。`,
+            discovered:`已发现的反应：`, ptable:`元素周期表`, beaker:`你的烧杯`,
+            dragHint:`把 2 个元素拖进烧杯`, stir:`两种物质都在里面了！拿起玻璃棒搅拌烧杯。`,
+            clear:`清空`, guide:`反应指南`, guideIntro:`一般规律——但每一对特定的元素都会生成各自特定的产物！`, guideInert:`不会反应（它们是惰性的！）`,
+            cat_alkali:`碱金属`, cat_alkaline:`碱土金属`, cat_transition:`过渡金属`, cat_postt:`后过渡金属`, cat_metalloid:`类金属`, cat_nonmetal:`非金属`, cat_halogen:`卤素`, cat_noble:`稀有气体`, cat_lanth:`镧系元素`, cat_actin:`锕系元素`,
+            r_youmade:`你制成了：`, r_dragmol:`拖动分子可以旋转它`, r_whatis:`它是什么，有什么用：`, r_needs:`发生反应需要什么：`, r_steps:`反应是怎么一步步发生的：`, r_warn:`真实且危险——千万不要在家里尝试！`, r_note:`为了游戏效果，有些知识做了简化。`, r_already:`（已发现）`,
+            nr_noble_h:`没有反应——这是稀有气体！`, nr_noble_b:`稀有气体（氦、氖、氩……）本身就有满的电子层，所以几乎从不反应。这就是为什么它们被称为"惰性气体"！`, nr_h:`没有反应`, nr_b:`它们在一般条件下不会反应。看看"反应指南"里哪些组合会反应——在真实的化学里，大多数随意的混合都不会发生任何事！`,
+            tip_atomic:`原子序数：`, tip_shells:`电子层：`, tip_funfact:`趣味知识：`,
+            q_count:`第 {i} 题，共 {n} 题`, q_pair:`你把哪两种元素合成了 {x}？`, q_product:`用 {a} 和 {b} 能制成什么？`, q_what:`{x} 是哪种物质？`, q_symbol:`{x} 的化学式是什么？`,
+            quiz_complete:`测验完成`, play_again:`再玩一次`, next_q:`下一题`, see_score:`查看我的分数`, score_perfect:`满分——你是真正的化学家！🧪`, score_good:`记性真好！👏`, score_try:`不错的尝试——再玩一次记住更多吧！`,
+            ans_salt:`盐`, ans_oxide:`氧化物`, ans_acidgas:`酸性气体`, ans_gas:`气体`, ans_compound:`化合物`, ans_alloy:`合金`, ans_metal:`金属`, ans_crystal:`晶体`,
+            np_counter:`（已发现 {n} / {total} 个反应）`, np_learn:`了解更多`, np_pageused:`（本页已用完，新的反应将记录在下一页）`
+        },
+        fr: {
+            back:`← Retour à mon site`,
+            intro:`Fais glisser 2 éléments du tableau périodique dans le bécher ! Chaque élément apparaît sous sa vraie forme physique — une poudre colorée, un liquide ou un gaz. Prends ensuite la baguette en verre et remue le bécher — le mélange prend sa couleur de réaction, et la réaction se produit ! Chaque paire précise donne un produit réel différent avec ses propres infos. Utilise le Guide des réactions pour les schémas généraux. Découvre 5 réactions pour débloquer le quiz !`,
+            disclaimer:`ⓘ Ceci est un jeu éducatif — certains faits sont simplifiés pour le jeu.`,
+            discovered:`Réactions découvertes :`, ptable:`Le tableau périodique`, beaker:`Ton bécher`,
+            dragHint:`Fais glisser 2 éléments dans le bécher`, stir:`Les deux produits sont dedans ! Prends la baguette en verre et remue le bécher.`,
+            clear:`Effacer`, guide:`Guide des réactions`, guideIntro:`Schémas généraux — mais chaque paire précise donne son propre produit !`, guideInert:`ne réagit jamais (ils sont inertes !)`,
+            cat_alkali:`Métal alcalin`, cat_alkaline:`Métal alcalino-terreux`, cat_transition:`Métal de transition`, cat_postt:`Métal post-transition`, cat_metalloid:`Métalloïde`, cat_nonmetal:`Non-métal`, cat_halogen:`Halogène`, cat_noble:`Gaz noble`, cat_lanth:`Lanthanide`, cat_actin:`Actinide`,
+            r_youmade:`Tu as fabriqué :`, r_dragmol:`fais glisser la molécule pour la tourner`, r_whatis:`Ce que c'est et à quoi ça sert :`, r_needs:`Ce qu'il faut pour que ça se produise :`, r_steps:`Comment ça se passe, étape par étape :`, r_warn:`Réel et dangereux — n'essaie jamais ça chez toi !`, r_note:`Certains faits sont simplifiés pour le jeu.`, r_already:`(déjà découvert)`,
+            nr_noble_h:`Aucune réaction — c'est un gaz noble !`, nr_noble_b:`Les gaz nobles (hélium, néon, argon...) ont déjà un ensemble complet d'électrons, donc ils ne réagissent presque jamais. C'est pourquoi on les appelle « inertes » !`, nr_h:`Aucune réaction`, nr_b:`Ceux-ci ne réagissent pas dans des conditions normales. Regarde le Guide des réactions pour les combinaisons qui réagissent — en vraie chimie, la plupart des mélanges au hasard ne font rien !`,
+            tip_atomic:`Numéro atomique :`, tip_shells:`Couches électroniques :`, tip_funfact:`Le savais-tu :`,
+            q_count:`Question {i} sur {n}`, q_pair:`Quels deux éléments as-tu combinés pour faire {x} ?`, q_product:`Que peux-tu fabriquer avec {a} et {b} ?`, q_what:`Quel type de substance est {x} ?`, q_symbol:`Quelle est la formule chimique de {x} ?`,
+            quiz_complete:`Quiz terminé`, play_again:`Rejouer`, next_q:`Question suivante`, see_score:`Voir mon score`, score_perfect:`Score parfait — tu es un vrai chimiste ! 🧪`, score_good:`Quelle mémoire ! 👏`, score_try:`Bien essayé — rejoue pour en retenir plus !`,
+            ans_salt:`un sel`, ans_oxide:`un oxyde`, ans_acidgas:`un gaz acide`, ans_gas:`un gaz`, ans_compound:`un composé`, ans_alloy:`un alliage`, ans_metal:`un métal`, ans_crystal:`un cristal`,
+            np_counter:`({n} réactions découvertes sur {total})`, np_learn:`En savoir plus`, np_pageused:`(Page pleine, les nouvelles réactions iront à la page suivante)`
+        },
+        es: {
+            back:`← Volver a mi sitio web`,
+            intro:`¡Arrastra 2 elementos de la tabla periódica al vaso! Cada elemento cae en su forma física real: un polvo de color, un líquido o un gas. Luego toma la varilla de vidrio y revuelve el vaso: la mezcla toma su color de reacción, ¡y ocurre la reacción! Cada par exacto crea un producto real diferente con sus propios datos. Usa la Guía de reacciones para ver los patrones generales. ¡Descubre 5 reacciones para desbloquear el cuestionario!`,
+            disclaimer:`ⓘ Este es un juego educativo: algunos datos están simplificados para el juego.`,
+            discovered:`Reacciones descubiertas:`, ptable:`La tabla periódica`, beaker:`Tu vaso`,
+            dragHint:`Arrastra 2 elementos al vaso`, stir:`¡Los dos productos están dentro! Toma la varilla de vidrio y revuelve el vaso.`,
+            clear:`Limpiar`, guide:`Guía de reacciones`, guideIntro:`Patrones generales, ¡pero cada par exacto crea su propio producto específico!`, guideInert:`nunca reacciona (¡son inertes!)`,
+            cat_alkali:`Metal alcalino`, cat_alkaline:`Metal alcalinotérreo`, cat_transition:`Metal de transición`, cat_postt:`Metal de post-transición`, cat_metalloid:`Metaloide`, cat_nonmetal:`No metal`, cat_halogen:`Halógeno`, cat_noble:`Gas noble`, cat_lanth:`Lantánido`, cat_actin:`Actínido`,
+            r_youmade:`Has creado:`, r_dragmol:`arrastra la molécula para girarla`, r_whatis:`Qué es y para qué sirve:`, r_needs:`Qué se necesita para que ocurra:`, r_steps:`Cómo ocurre, paso a paso:`, r_warn:`Real y peligroso: ¡nunca lo intentes en casa!`, r_note:`Algunos datos están simplificados para el juego.`, r_already:`(ya descubierto)`,
+            nr_noble_h:`Sin reacción: ¡es un gas noble!`, nr_noble_b:`Los gases nobles (helio, neón, argón...) ya tienen un conjunto completo de electrones, así que casi nunca reaccionan. ¡Por eso se les llama "inertes"!`, nr_h:`Sin reacción`, nr_b:`Estos no reaccionan en condiciones normales. Mira la Guía de reacciones para ver combinaciones que SÍ reaccionan: en la química real, ¡la mayoría de las mezclas al azar no hacen nada!`,
+            tip_atomic:`Número atómico:`, tip_shells:`Capas de electrones:`, tip_funfact:`Dato curioso:`,
+            q_count:`Pregunta {i} de {n}`, q_pair:`¿Qué dos elementos combinaste para crear {x}?`, q_product:`¿Qué puedes crear con {a} y {b}?`, q_what:`¿Qué tipo de sustancia es {x}?`, q_symbol:`¿Cuál es la fórmula química de {x}?`,
+            quiz_complete:`Cuestionario completado`, play_again:`Jugar de nuevo`, next_q:`Siguiente pregunta`, see_score:`Ver mi puntuación`, score_perfect:`¡Puntuación perfecta, eres todo un químico! 🧪`, score_good:`¡Buena memoria! 👏`, score_try:`¡Buen intento, juega de nuevo para recordar más!`,
+            ans_salt:`una sal`, ans_oxide:`un óxido`, ans_acidgas:`un gas ácido`, ans_gas:`un gas`, ans_compound:`un compuesto`, ans_alloy:`una aleación`, ans_metal:`un metal`, ans_crystal:`un cristal`,
+            np_counter:`({n} de {total} reacciones descubiertas)`, np_learn:`Más información`, np_pageused:`(Página llena, las nuevas reacciones irán a la página siguiente)`
+        },
+        de: {
+            back:`← Zurück zu meiner Website`,
+            intro:`Zieh 2 Elemente aus dem Periodensystem in das Becherglas! Jedes Element erscheint in seiner echten physischen Form — ein farbiges Pulver, eine Flüssigkeit oder ein Gas. Nimm dann den Glasstab und rühre das Becherglas um — die Mischung nimmt ihre Reaktionsfarbe an, und die Reaktion passiert! Jedes genaue Paar ergibt ein anderes echtes Produkt mit eigenen Fakten. Nutze den Reaktionsführer für die allgemeinen Muster. Entdecke 5 Reaktionen, um das Quiz freizuschalten!`,
+            disclaimer:`ⓘ Dies ist ein Lernspiel — einige Fakten sind für das Spiel vereinfacht.`,
+            discovered:`Entdeckte Reaktionen:`, ptable:`Das Periodensystem`, beaker:`Dein Becherglas`,
+            dragHint:`Zieh 2 Elemente ins Becherglas`, stir:`Beide Stoffe sind drin! Nimm den Glasstab und rühre das Becherglas um.`,
+            clear:`Leeren`, guide:`Reaktionsführer`, guideIntro:`Allgemeine Muster — aber jedes genaue Paar ergibt sein eigenes Produkt!`, guideInert:`reagiert nie (sie sind reaktionsträge!)`,
+            cat_alkali:`Alkalimetall`, cat_alkaline:`Erdalkalimetall`, cat_transition:`Übergangsmetall`, cat_postt:`Post-Übergangsmetall`, cat_metalloid:`Halbmetall`, cat_nonmetal:`Nichtmetall`, cat_halogen:`Halogen`, cat_noble:`Edelgas`, cat_lanth:`Lanthanoid`, cat_actin:`Actinoid`,
+            r_youmade:`Du hast hergestellt:`, r_dragmol:`zieh am Molekül, um es zu drehen`, r_whatis:`Was es ist und wofür es verwendet wird:`, r_needs:`Was du brauchst, damit es passiert:`, r_steps:`Wie es Schritt für Schritt abläuft:`, r_warn:`Echt und gefährlich — probiere das niemals zu Hause aus!`, r_note:`Einige Fakten sind für das Spiel vereinfacht.`, r_already:`(bereits entdeckt)`,
+            nr_noble_h:`Keine Reaktion — das ist ein Edelgas!`, nr_noble_b:`Edelgase (Helium, Neon, Argon...) haben bereits eine volle Elektronenhülle, daher reagieren sie fast nie. Deshalb nennt man sie „reaktionsträge"!`, nr_h:`Keine Reaktion`, nr_b:`Diese reagieren unter normalen Bedingungen nicht. Schau im Reaktionsführer nach Kombinationen, die reagieren — in der echten Chemie tun die meisten zufälligen Mischungen gar nichts!`,
+            tip_atomic:`Ordnungszahl:`, tip_shells:`Elektronenschalen:`, tip_funfact:`Wusstest du:`,
+            q_count:`Frage {i} von {n}`, q_pair:`Welche zwei Elemente hast du kombiniert, um {x} herzustellen?`, q_product:`Was kannst du aus {a} und {b} herstellen?`, q_what:`Welche Art von Stoff ist {x}?`, q_symbol:`Wie lautet die chemische Formel von {x}?`,
+            quiz_complete:`Quiz abgeschlossen`, play_again:`Nochmal spielen`, next_q:`Nächste Frage`, see_score:`Meine Punktzahl ansehen`, score_perfect:`Perfekte Punktzahl — du bist ein echter Chemiker! 🧪`, score_good:`Tolles Gedächtnis! 👏`, score_try:`Guter Versuch — spiel nochmal, um dir mehr zu merken!`,
+            ans_salt:`ein Salz`, ans_oxide:`ein Oxid`, ans_acidgas:`ein saures Gas`, ans_gas:`ein Gas`, ans_compound:`eine Verbindung`, ans_alloy:`eine Legierung`, ans_metal:`ein Metall`, ans_crystal:`ein Kristall`,
+            np_counter:`({n} von {total} Reaktionen entdeckt)`, np_learn:`Mehr erfahren`, np_pageused:`(Seite voll, neue Reaktionen kommen auf die nächste Seite)`
+        }
+    };
+    let currentLang = 'en';
+    try { const s = localStorage.getItem('chemimix_lang'); if (s && I18N[s]) currentLang = s; } catch(_){}
+    function t(key, vars){ let s = (I18N[currentLang] && I18N[currentLang][key]); if (s == null) s = I18N.en[key]; if (s == null) return key;
+        if (vars) for (const k in vars) s = s.split('{'+k+'}').join(vars[k]); return s; }
+    function syncCatNames(){ Object.keys(CATS).forEach(k => { CATS[k].name = t('cat_'+k); }); }
+    syncCatNames();
+    function setLang(l){ if (!I18N[l]) return; currentLang = l; try { localStorage.setItem('chemimix_lang', l); } catch(_){} applyLang(); }
     /* ===== 118 ELEMENTS: [n, symbol, name, category, col, row] ===== */
     const ELEMENTS = [
     [1,'H','Hydrogen','nonmetal',1,1],[2,'He','Helium','noble',18,1],
@@ -441,9 +547,9 @@
         const shells = electronShells(el.n).join(', ');
         const fact = FACTS[el.sym] || `${el.name} (${el.sym}) is a ${CATS[el.cat].name.toLowerCase()} — element number ${el.n} on the periodic table.`;
         return `<div class="tip-sym">${el.sym}</div><div class="tip-name">${el.name}</div>
-            <div class="tip-row">Atomic number: <b>${el.n}</b> &nbsp;•&nbsp; ${CATS[el.cat].name}</div>
-            <div class="tip-row">Electron shells: <b>${shells}</b></div>
-            <div class="tip-fact"><b class="tip-label">Fun fact:</b> ${fact}</div>`;
+            <div class="tip-row">${t('tip_atomic')} <b>${el.n}</b> &nbsp;•&nbsp; ${CATS[el.cat].name}</div>
+            <div class="tip-row">${t('tip_shells')} <b>${shells}</b></div>
+            <div class="tip-fact"><b class="tip-label">${t('tip_funfact')}</b> ${fact}</div>`;
     }
     function placeTip(tileEl){
         tip.style.display = 'block';
@@ -654,7 +760,9 @@
 
     /* ===== Legend ===== */
     const legend = document.getElementById('legend');
-    Object.keys(CATS).forEach(k => { const s=document.createElement('span'); s.innerHTML=`<span class="swatch" style="background:${CATS[k].color}"></span>${CATS[k].name}`; legend.appendChild(s); });
+    function buildLegend(){ legend.innerHTML='';
+        Object.keys(CATS).forEach(k => { const s=document.createElement('span'); s.innerHTML=`<span class="swatch" style="background:${CATS[k].color}"></span>${CATS[k].name}`; legend.appendChild(s); }); }
+    buildLegend();
 
     /* ===== Guide list ===== */
     const guideList = document.getElementById('guideList');
@@ -663,12 +771,14 @@
         const label = tok.cat ? CATS[tok.cat].name : EL[tok.sym].name;
         return `<span class="tag" style="background:${CATS[cat].color}">${label}</span>`;
     }
-    GUIDE.forEach(r => { const li=document.createElement('li');
-        li.innerHTML=`<span>${r.emoji}</span>${tokenTag(r.need[0])}<span class="arrow">+</span>${tokenTag(r.need[1])}<span class="arrow">&rarr;</span><strong>${r.name}</strong>`;
-        guideList.appendChild(li); });
-    const inertLi=document.createElement('li');
-    inertLi.innerHTML=`<span>😶</span><span class="tag" style="background:var(--c-noble)">Noble gas</span><span class="arrow">&rarr;</span> never reacts (they're inert!)`;
-    guideList.appendChild(inertLi);
+    function buildGuide(){ guideList.innerHTML='';
+        GUIDE.forEach(r => { const li=document.createElement('li');
+            li.innerHTML=`<span>${r.emoji}</span>${tokenTag(r.need[0])}<span class="arrow">+</span>${tokenTag(r.need[1])}<span class="arrow">&rarr;</span><strong>${r.name}</strong>`;
+            guideList.appendChild(li); });
+        const inertLi=document.createElement('li');
+        inertLi.innerHTML=`<span>😶</span><span class="tag" style="background:var(--c-noble)">${CATS.noble.name}</span><span class="arrow">&rarr;</span> ${t('guideInert')}`;
+        guideList.appendChild(inertLi); }
+    buildGuide();
 
     /* ===== Game state ===== */
     let selected = [];
@@ -745,7 +855,7 @@
     }
     function render(){
         // chips
-        if(!selected.length) chipsEl.innerHTML='<span class="hint">Drag 2 elements into the beaker</span>';
+        if(!selected.length) chipsEl.innerHTML=`<span class="hint">${t('dragHint')}</span>`;
         else { chipsEl.innerHTML=''; selected.forEach(sym=>{ const c=document.createElement('span'); c.className='chip';
             c.innerHTML=`${sym} <button title="remove">&times;</button>`; c.querySelector('button').addEventListener('click',()=>toggleEl(sym)); chipsEl.appendChild(c); }); }
         // tile highlight
@@ -938,12 +1048,12 @@
         const items = npEntries.slice(page*NP_PER_PAGE, page*NP_PER_PAGE + NP_PER_PAGE);
         let lis = '';
         for (const it of items)
-            lis += `<li>${npEsc(it.text)} <a class="np-learn" href="${it.url}" target="_blank" rel="noopener noreferrer">Learn More</a></li>`;
+            lis += `<li>${npEsc(it.text)} <a class="np-learn" href="${it.url}" target="_blank" rel="noopener noreferrer">${t('np_learn')}</a></li>`;
         const note = (page === npNotePage)
-            ? `<div class="np-note">(Page used, new reactions will be recorded on next page)</div>` : '';
+            ? `<div class="np-note">${t('np_pageused')}</div>` : '';
         content.innerHTML =
             `<ul class="np-list">${lis}</ul>` + note +
-            `<div class="np-counter">(${npEntries.length} out of ${NP_TOTAL} reactions discovered)</div>`;
+            `<div class="np-counter">${t('np_counter',{n:npEntries.length,total:NP_TOTAL})}</div>`;
     }
     function npRefresh(){ npRenderPage(npTop, npPageIndex); npRenderPage(npBase, npPageIndex + 1); }
 
@@ -1348,24 +1458,24 @@
         resultEl.className='result show';
         resultEl.innerHTML=`
             <div class="r-head"><span class="r-emoji">${rxn.emoji}</span>
-                <div><h3>${rxn.name}${isNew?'':' (already discovered)'}</h3>
-                <div class="r-product">You made: ${rxn.product}</div></div></div>
+                <div><h3>${rxn.name}${isNew?'':' '+t('r_already')}</h3>
+                <div class="r-product">${t('r_youmade')} ${rxn.product}</div></div></div>
             <canvas class="mol3d" id="mol3d" width="250" height="175"></canvas>
-            <div class="mol-hint">🖱️ drag the molecule to spin it around</div>
-            <div class="r-sec"><b>What it is &amp; what it's used for:</b> ${rxn.fact}</div>
-            <div class="r-sec"><b>What you need to make it happen:</b> ${detail.needs}</div>
-            <div class="r-sec"><b>How it happens, step by step:</b><ol class="r-steps">${detail.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
-            ${rxn.warn?'<div class="r-warn">⚠️ Real and dangerous — never try this at home!</div>':''}
-            <div class="r-note">&#9432; Some facts are simplified for the sake of the game.</div>`;
+            <div class="mol-hint">🖱️ ${t('r_dragmol')}</div>
+            <div class="r-sec"><b>${t('r_whatis')}</b> ${rxn.fact}</div>
+            <div class="r-sec"><b>${t('r_needs')}</b> ${detail.needs}</div>
+            <div class="r-sec"><b>${t('r_steps')}</b><ol class="r-steps">${detail.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
+            ${rxn.warn?`<div class="r-warn">⚠️ ${t('r_warn')}</div>`:''}
+            <div class="r-note">&#9432; ${t('r_note')}</div>`;
         const canvas = document.getElementById('mol3d');
         if (mol) startMol3d(canvas, mol); else canvas.style.display='none';
     }
     function showInert(){ cancelAnimationFrame(mol3dRAF); resultEl.className='result show norxn';
-        resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>No reaction — it's a noble gas!</h3>
-            <div class="r-fact">Noble gases (helium, neon, argon...) already have a full set of electrons, so they almost never react. That's why they're called "inert"!</div>`; }
+        resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>${t('nr_noble_h')}</h3>
+            <div class="r-fact">${t('nr_noble_b')}</div>`; }
     function showNoReaction(){ cancelAnimationFrame(mol3dRAF); resultEl.className='result show norxn';
-        resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>No reaction</h3>
-            <div class="r-fact">These don't react under normal conditions. Check the Reaction Guide for combos that DO react — in real chemistry, most random mixtures do nothing!</div>`; }
+        resultEl.innerHTML=`<div class="r-emoji">😶</div><h3>${t('nr_h')}</h3>
+            <div class="r-fact">${t('nr_b')}</div>`; }
 
     /* ===== Effects ===== */
     function runEffect(type, emoji){ beaker.classList.remove('shake'); void beaker.offsetWidth;
@@ -1409,9 +1519,9 @@
         return { name, formula };
     }
     // short "what kind of thing is it" answer, from the reaction type
-    const CAT_ANSWER = { salt:'a Salt', oxide:'an Oxide', acidgas:'an Acid Gas', combustion:'a Gas',
-        burn:'a Compound', synthesis:'a Compound', alloy:'an Alloy', combine:'a Compound' };
-    function categoryLabel(els){ return CAT_ANSWER[typeOf(els)] || 'a Compound'; }
+    const CAT_ANSWER = { salt:'ans_salt', oxide:'ans_oxide', acidgas:'ans_acidgas', combustion:'ans_gas',
+        burn:'ans_compound', synthesis:'ans_compound', alloy:'ans_alloy', combine:'ans_compound' };
+    function categoryLabel(els){ return t(CAT_ANSWER[typeOf(els)] || 'ans_compound'); }
     function pickDistractors(pool, correctKey, n){
         const seen = new Set([correctKey]), out = [];
         for (const o of shuffle(pool.slice())) { if (out.length >= n) break; if (!o.key || seen.has(o.key)) continue; seen.add(o.key); out.push(o); }
@@ -1423,20 +1533,20 @@
         if ((kind === 'symbol' || kind === 'what') && !pp.formula && kind === 'symbol') kind = 'pair';
         let text, correct, pool;
         if (kind === 'product') {
-            text = `What can you make from <strong>${a.name} (${a.sym})</strong> and <strong>${b.name} (${b.sym})</strong>?`;
+            text = t('q_product', { a:`<strong>${a.name} (${a.sym})</strong>`, b:`<strong>${b.name} (${b.sym})</strong>` });
             correct = { key:d.rxn.product, label:`${d.rxn.product} (${rxnName})` };
             pool = pools.productPool;
         } else if (kind === 'what') {
-            text = `What kind of substance is <strong>${pp.name}</strong>?`;
+            text = t('q_what', { x:`<strong>${pp.name}</strong>` });
             const cat = categoryLabel([a,b]);
             correct = { key:cat, label:cat };
             pool = pools.categoryPool;
         } else if (kind === 'symbol') {
-            text = `What is the chemical formula for <strong>${pp.name}</strong>?`;
+            text = t('q_symbol', { x:`<strong>${pp.name}</strong>` });
             correct = { key:pp.formula, label:pp.formula };
             pool = pools.symbolPool;
         } else { // 'pair'
-            text = `Which two elements did you combine to make <strong>${d.rxn.product}</strong>?`;
+            text = t('q_pair', { x:`<strong>${d.rxn.product}</strong>` });
             correct = { key:pairKey(d.els), label:pairLabel(d.els) };
             pool = pools.pairPool;
         }
@@ -1451,7 +1561,7 @@
                 .concat(discovered.map(d=>({key:pairKey(d.els), label:pairLabel(d.els)}))),
             productPool: refs.map(r=>({key:r.product, label:`${r.product} (${r.name.replace(/!$/,'')})`})),
             symbolPool: refs.map(r=>{ const f=parseProduct(r.product).formula; return {key:f, label:f}; }).filter(o=>o.key),
-            categoryPool: ['a Salt','an Oxide','an Acid Gas','a Gas','a Compound','an Alloy','a Metal','a Crystal'].map(c=>({key:c,label:c}))
+            categoryPool: ['ans_salt','ans_oxide','ans_acidgas','ans_gas','ans_compound','ans_alloy','ans_metal','ans_crystal'].map(k=>{ const v=t(k); return {key:v,label:v}; })
         };
         // mix the question kinds so the quiz isn't all one type (all four appear, then extras)
         const kinds = shuffle(['pair','product','what','symbol']).concat(shuffle(['pair','product','what','symbol']));
@@ -1461,7 +1571,7 @@
         overlay.classList.add('show'); renderQuestion();
     }
     function renderQuestion(){ const q=quizQuestions[quizIndex];
-        quizCard.innerHTML=`<div class="q-count">Question ${quizIndex+1} of ${quizQuestions.length}</div>
+        quizCard.innerHTML=`<div class="q-count">${t('q_count',{i:quizIndex+1,n:quizQuestions.length})}</div>
             <div class="q-text">${q.text}</div>
             <div class="q-options" id="qOptions"></div><div class="q-fact" id="qFact"></div>`;
         const wrap=document.getElementById('qOptions');
@@ -1471,15 +1581,27 @@
         if(btn.dataset.key===q.correctKey) quizScore++; else btn.classList.add('wrong');
         document.getElementById('qFact').textContent=q.d.rxn.fact;
         const next=document.createElement('button'); next.className='btn btn-mix'; next.style.marginTop='1.2rem';
-        next.textContent=(quizIndex<quizQuestions.length-1)?'Next question':'See my score';
+        next.textContent=(quizIndex<quizQuestions.length-1)?t('next_q'):t('see_score');
         next.addEventListener('click',()=>{ quizIndex++; if(quizIndex<quizQuestions.length) renderQuestion(); else showScore(); });
         quizCard.appendChild(next);
     }
-    function showScore(){ let msg=quizScore===5?'Perfect score — you’re a real chemist! 🧪':(quizScore>=3?'Great memory! 👏':'Good try — play again to remember more!');
-        quizCard.innerHTML=`<h2>Quiz Complete</h2><div class="score-big">${quizScore} / 5</div><p>${msg}</p>
-            <button class="btn btn-mix" id="restartBtn" style="margin-top:1.2rem">Play again</button>`;
+    function showScore(){ let msg=quizScore===5?t('score_perfect'):(quizScore>=3?t('score_good'):t('score_try'));
+        quizCard.innerHTML=`<h2>${t('quiz_complete')}</h2><div class="score-big">${quizScore} / 5</div><p>${msg}</p>
+            <button class="btn btn-mix" id="restartBtn" style="margin-top:1.2rem">${t('play_again')}</button>`;
         document.getElementById('restartBtn').addEventListener('click',restart); }
     function restart(){ overlay.classList.remove('show'); notepadDrawer.classList.remove('np-locked'); discovered.length=0; discoveredKeys.clear(); selected=[]; reacted=false; updateProgress(); render(); resultEl.className='result'; resultEl.innerHTML=''; }
+
+    /* ===== Apply the chosen language everywhere ===== */
+    function applyLang(){
+        syncCatNames();
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+        buildLegend(); buildGuide(); render(); npRefresh();
+        document.querySelectorAll('.el').forEach(b => { if (b.dataset.sym) { const e = EL[b.dataset.sym]; b.title = e.name + ' — ' + CATS[e.cat].name; } });
+        if (overlay.classList.contains('show') && quizQuestions.length && quizIndex < quizQuestions.length) renderQuestion();
+        const sel = document.getElementById('langSelect'); if (sel) sel.value = currentLang;
+    }
+    document.getElementById('langSelect').addEventListener('change', e => setLang(e.target.value));
+    applyLang();   // set everything to the saved / default language on load
     </script>
 </body>
 </html>
